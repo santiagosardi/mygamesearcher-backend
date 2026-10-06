@@ -24,22 +24,16 @@ export class ColeccionService {
     private readonly juegoRepository: EntityRepository<Juego>,
   ) {}
 
-  findAll(usuarioId?: number): Promise<Coleccion[]> {
-    if (
-      usuarioId !== undefined &&
-      (!Number.isSafeInteger(usuarioId) || usuarioId <= 0)
-    ) {
-      throw new BadRequestException('usuarioId debe ser un entero positivo');
-    }
+  findAll(usuarioId: number): Promise<Coleccion[]> {
     return this.coleccionRepository.find(
-      usuarioId === undefined ? {} : { usuario: usuarioId },
+      { usuario: usuarioId },
       { populate: ['usuario', 'juegos'] },
     );
   }
 
-  async findOne(id: number): Promise<Coleccion> {
+  async findOne(id: number, usuarioId: number): Promise<Coleccion> {
     const coleccion = await this.coleccionRepository.findOne(
-      { id },
+      { id, usuario: usuarioId },
       { populate: ['usuario', 'juegos'] },
     );
     if (!coleccion) {
@@ -48,11 +42,11 @@ export class ColeccionService {
     return coleccion;
   }
 
-  async create(dto: CreateColeccionDto): Promise<Coleccion> {
-    const usuario = await this.usuarioRepository.findOne({ id: dto.usuarioId });
+  async create(dto: CreateColeccionDto, usuarioId: number): Promise<Coleccion> {
+    const usuario = await this.usuarioRepository.findOne({ id: usuarioId });
     if (!usuario) {
       throw new NotFoundException(
-        `No se encontró el usuario con id ${dto.usuarioId}`,
+        `No se encontró el usuario con id ${usuarioId}`,
       );
     }
     const nombre = dto.nombre.trim();
@@ -70,8 +64,12 @@ export class ColeccionService {
     return coleccion;
   }
 
-  async update(id: number, dto: UpdateColeccionDto): Promise<Coleccion> {
-    const coleccion = await this.findOne(id);
+  async update(
+    id: number,
+    dto: UpdateColeccionDto,
+    usuarioId: number,
+  ): Promise<Coleccion> {
+    const coleccion = await this.findOne(id, usuarioId);
     const nombre = dto.nombre?.trim();
     if (nombre !== undefined) {
       await this.verificarNombreDisponible(coleccion.usuario.id, nombre, id);
@@ -95,8 +93,8 @@ export class ColeccionService {
     return coleccion;
   }
 
-  async remove(id: number): Promise<void> {
-    const coleccion = await this.findOne(id);
+  async remove(id: number, usuarioId: number): Promise<void> {
+    const coleccion = await this.findOne(id, usuarioId);
     const entityManager = this.coleccionRepository.getEntityManager();
     entityManager.remove(coleccion);
     await entityManager.flush();

@@ -1,3 +1,4 @@
+import { AuthModule } from '../auth/auth.module';
 import { Module } from '@nestjs/common';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { Biblioteca } from './biblioteca.entity';
@@ -7,7 +8,10 @@ import { BibliotecaService } from './biblioteca.service';
 import { BibliotecaController } from './biblioteca.controller';
 
 @Module({
-  imports: [MikroOrmModule.forFeature([Biblioteca, Usuario, Juego])],
+  imports: [
+    AuthModule,
+    MikroOrmModule.forFeature([Biblioteca, Usuario, Juego]),
+  ],
   providers: [BibliotecaService],
   controllers: [BibliotecaController],
 })

@@ -10,10 +10,6 @@ import { EstadoBiblioteca } from '../estado-biblioteca.enum';
 export class CreateBibliotecaDto {
   @IsInt()
   @IsPositive()
-  usuarioId!: number;
-
-  @IsInt()
-  @IsPositive()
   juegoId!: number;
 
   @ValidateIf(

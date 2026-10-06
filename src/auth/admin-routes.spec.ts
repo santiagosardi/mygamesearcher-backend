@@ -74,22 +74,22 @@ describe('Protección de rutas administrativas', () => {
   });
 
   describe.each([BibliotecaController, ColeccionController])(
-    '%s sin cambios',
+    '%s personal',
     (controller) => {
       it.each(['findAll', 'findOne', 'create', 'update', 'remove'])(
-        '%s sigue sin guards',
+        '%s requiere JWT',
         (nombre) => {
           expect(metadata(controller, nombre)).toEqual({
-            guards: undefined,
+            guards: [JwtAuthGuard],
             roles: undefined,
           });
         },
       );
     },
   );
-  it('Recomendaciones sigue sin guards', () => {
+  it('Recomendaciones requiere JWT', () => {
     expect(metadata(RecomendacionController, 'recomendar')).toEqual({
-      guards: undefined,
+      guards: [JwtAuthGuard],
       roles: undefined,
     });
   });

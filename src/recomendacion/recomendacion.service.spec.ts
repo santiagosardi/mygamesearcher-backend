@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  ForbiddenException,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { getRepositoryToken } from '@mikro-orm/nestjs';
 import { Collection } from '@mikro-orm/core';
@@ -107,11 +103,11 @@ describe('RecomendacionService', () => {
     expect(juegoRepository.find).not.toHaveBeenCalled();
   });
 
-  it('rechaza con 403 una colección de otro usuario', async () => {
+  it('devuelve 404 para una colección de otro usuario', async () => {
     bibliotecaRepository.find.mockResolvedValue([]);
-    prepararColeccion([crearJuego(1)], 2);
+    coleccionRepository.findOne.mockResolvedValue(null);
     await expect(service.recomendar(1, 5)).rejects.toBeInstanceOf(
-      ForbiddenException,
+      NotFoundException,
     );
     expect(juegoRepository.find).not.toHaveBeenCalled();
   });
@@ -162,7 +158,7 @@ describe('RecomendacionService', () => {
       { populate: ['generos', 'plataformas', 'caracteristicas'] },
     );
     expect(coleccionRepository.findOne).toHaveBeenCalledWith(
-      { id: 5 },
+      { id: 5, usuario: 1 },
       {
         populate: [
           'usuario',
@@ -223,13 +219,6 @@ describe('RecomendacionService', () => {
     const respuesta = await service.recomendar(1, 5);
 
     expect(respuesta.recomendaciones.map((item) => item.juego.id)).toEqual([2]);
-  });
-
-  it.each([0, -1, 1.5, NaN])('rechaza usuarioId inválido: %s', async (id) => {
-    await expect(service.recomendar(id)).rejects.toBeInstanceOf(
-      BadRequestException,
-    );
-    expect(usuarioRepository.findOne).not.toHaveBeenCalled();
   });
 
   it('devuelve 404 si el usuario no existe', async () => {
