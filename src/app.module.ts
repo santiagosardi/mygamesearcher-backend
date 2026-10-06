@@ -1,9 +1,28 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { MikroOrmModule } from '@mikro-orm/nestjs';
+
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { GeneroModule } from './genero/genero.module';
+import { PlataformaModule } from './plataforma/plataforma.module';
+import { CaracteristicaModule } from './caracteristica/caracteristica.module';
+import { JuegoModule } from './juego/juego.module';
+import mikroOrmConfig from './mikro-orm.config';
 
 @Module({
-  imports: [],
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
+
+    MikroOrmModule.forRoot(mikroOrmConfig),
+
+    GeneroModule,
+    PlataformaModule,
+    CaracteristicaModule,
+    JuegoModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
