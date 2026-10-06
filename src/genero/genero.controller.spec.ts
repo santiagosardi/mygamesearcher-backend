@@ -2,6 +2,8 @@ import { Test } from '@nestjs/testing';
 import { GeneroController } from './genero.controller';
 import { GeneroService } from './genero.service';
 import { Genero } from './genero.entity';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
 
 describe('GeneroController', () => {
   let controller: GeneroController;
@@ -20,7 +22,12 @@ describe('GeneroController', () => {
     const module = await Test.createTestingModule({
       controllers: [GeneroController],
       providers: [{ provide: GeneroService, useValue: service }],
-    }).compile();
+    })
+      .overrideGuard(JwtAuthGuard)
+      .useValue({ canActivate: () => true })
+      .overrideGuard(RolesGuard)
+      .useValue({ canActivate: () => true })
+      .compile();
 
     controller = module.get<GeneroController>(GeneroController);
   });
