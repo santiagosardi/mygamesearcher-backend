@@ -12,12 +12,8 @@ import { PasswordService } from './password.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { JwtService } from '@nestjs/jwt';
-import type { JwtPayload, LoginResponse } from './auth.types';
-
-export type UsuarioPublico = Pick<
-  Usuario,
-  'id' | 'nombre' | 'apellido' | 'email' | 'rol' | 'activo' | 'fechaCreacion'
->;
+import type { JwtPayload, LoginResponse, UsuarioPublico } from './auth.types';
+import { usuarioPublico } from './public-user';
 
 @Injectable()
 export class AuthService {
@@ -50,7 +46,7 @@ export class AuthService {
       }
       throw error;
     }
-    return this.usuarioPublico(usuario);
+    return usuarioPublico(usuario);
   }
 
   async login(dto: LoginDto): Promise<LoginResponse> {
@@ -70,18 +66,6 @@ export class AuthService {
       rol: usuario.rol,
     };
     const accessToken = await this.jwtService.signAsync(payload);
-    return { user: this.usuarioPublico(usuario), accessToken };
-  }
-
-  private usuarioPublico(usuario: Usuario): UsuarioPublico {
-    return {
-      id: usuario.id,
-      nombre: usuario.nombre,
-      apellido: usuario.apellido,
-      email: usuario.email,
-      rol: usuario.rol,
-      activo: usuario.activo,
-      fechaCreacion: usuario.fechaCreacion,
-    };
+    return { user: usuarioPublico(usuario), accessToken };
   }
 }
