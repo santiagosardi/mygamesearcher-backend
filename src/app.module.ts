@@ -11,6 +11,7 @@ import { JuegoModule } from './juego/juego.module';
 import { UsuarioModule } from './usuario/usuario.module';
 import { BibliotecaModule } from './biblioteca/biblioteca.module';
 import { ColeccionModule } from './coleccion/coleccion.module';
+import { RecomendacionModule } from './recomendacion/recomendacion.module';
 import mikroOrmConfig from './mikro-orm.config';
 
 @Module({
@@ -28,6 +29,7 @@ import mikroOrmConfig from './mikro-orm.config';
     UsuarioModule,
     BibliotecaModule,
     ColeccionModule,
+    RecomendacionModule,
   ],
   controllers: [AppController],
   providers: [AppService],
