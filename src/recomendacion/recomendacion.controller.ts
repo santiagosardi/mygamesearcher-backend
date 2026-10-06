@@ -6,7 +6,11 @@ export class RecomendacionController {
   constructor(private readonly recomendacionService: RecomendacionService) {}
 
   @Get()
-  recomendar(@Query('usuarioId', ParseIntPipe) usuarioId: number) {
-    return this.recomendacionService.recomendar(usuarioId);
+  recomendar(
+    @Query('usuarioId', ParseIntPipe) usuarioId: number,
+    @Query('coleccionId', new ParseIntPipe({ optional: true }))
+    coleccionId?: number,
+  ) {
+    return this.recomendacionService.recomendar(usuarioId, coleccionId);
   }
 }
