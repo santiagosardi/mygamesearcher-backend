@@ -20,6 +20,9 @@ export class Usuario {
   @Property({ length: 254, unique: true })
   email!: string;
 
+  @Property({ type: 'string', length: 255, nullable: true, hidden: true })
+  passwordHash: string | null = null;
+
   @Enum({ items: () => RolUsuario, default: RolUsuario.USER })
   rol: RolUsuario = RolUsuario.USER;
 

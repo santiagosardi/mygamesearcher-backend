@@ -13,6 +13,7 @@ import { BibliotecaModule } from './biblioteca/biblioteca.module';
 import { ColeccionModule } from './coleccion/coleccion.module';
 import { RecomendacionModule } from './recomendacion/recomendacion.module';
 import mikroOrmConfig from './mikro-orm.config';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import mikroOrmConfig from './mikro-orm.config';
     BibliotecaModule,
     ColeccionModule,
     RecomendacionModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
