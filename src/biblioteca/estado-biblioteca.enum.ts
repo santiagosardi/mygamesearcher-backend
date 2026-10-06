@@ -1,0 +1,6 @@
+export enum EstadoBiblioteca {
+  PENDIENTE = 'PENDIENTE',
+  JUGANDO = 'JUGANDO',
+  COMPLETADO = 'COMPLETADO',
+  ABANDONADO = 'ABANDONADO',
+}

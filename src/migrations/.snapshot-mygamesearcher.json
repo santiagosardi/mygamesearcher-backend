@@ -2,6 +2,190 @@
   "namespaces": [],
   "tables": [
     {
+      "name": "biblioteca",
+      "columns": {
+        "estado": {
+          "name": "estado",
+          "type": "enum('pendiente','jugando','completado','abandonado')",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": "'PENDIENTE'",
+          "comment": null,
+          "collation": null,
+          "enumItems": [
+            "PENDIENTE",
+            "JUGANDO",
+            "COMPLETADO",
+            "ABANDONADO"
+          ],
+          "mappedType": "enum"
+        },
+        "favorito": {
+          "name": "favorito",
+          "type": "tinyint(1)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": "false",
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "boolean"
+        },
+        "fecha_agregado": {
+          "name": "fecha_agregado",
+          "type": "datetime",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "datetime"
+        },
+        "id": {
+          "name": "id",
+          "type": "int",
+          "unsigned": true,
+          "autoincrement": true,
+          "primary": true,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "integer"
+        },
+        "juego_id": {
+          "name": "juego_id",
+          "type": "int",
+          "unsigned": true,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "integer"
+        },
+        "usuario_id": {
+          "name": "usuario_id",
+          "type": "int",
+          "unsigned": true,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": true,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "integer"
+        }
+      },
+      "indexes": [
+        {
+          "columnNames": [
+            "id"
+          ],
+          "composite": false,
+          "constraint": true,
+          "keyName": "PRIMARY",
+          "primary": true,
+          "unique": true
+        },
+        {
+          "columnNames": [
+            "juego_id"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "biblioteca_juego_id_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "usuario_id"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "biblioteca_usuario_id_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "usuario_id",
+            "juego_id"
+          ],
+          "composite": true,
+          "constraint": true,
+          "keyName": "biblioteca_usuario_juego_unique",
+          "primary": false,
+          "unique": true
+        }
+      ],
+      "checks": [],
+      "triggers": [],
+      "foreignKeys": {
+        "biblioteca_juego_id_foreign": {
+          "columnNames": [
+            "juego_id"
+          ],
+          "constraintName": "biblioteca_juego_id_foreign",
+          "localTableName": "biblioteca",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "juego",
+          "deleteRule": "cascade"
+        },
+        "biblioteca_usuario_id_foreign": {
+          "columnNames": [
+            "usuario_id"
+          ],
+          "constraintName": "biblioteca_usuario_id_foreign",
+          "localTableName": "biblioteca",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "usuario",
+          "deleteRule": "cascade"
+        }
+      },
+      "comment": null
+    },
+    {
       "name": "caracteristica",
       "columns": {
         "descripcion": {
@@ -81,6 +265,249 @@
       "checks": [],
       "triggers": [],
       "foreignKeys": {},
+      "comment": null
+    },
+    {
+      "name": "coleccion",
+      "columns": {
+        "descripcion": {
+          "name": "descripcion",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "text"
+        },
+        "fecha_creacion": {
+          "name": "fecha_creacion",
+          "type": "datetime",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "datetime"
+        },
+        "id": {
+          "name": "id",
+          "type": "int",
+          "unsigned": true,
+          "autoincrement": true,
+          "primary": true,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "integer"
+        },
+        "nombre": {
+          "name": "nombre",
+          "type": "varchar(100)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 100,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "string"
+        },
+        "usuario_id": {
+          "name": "usuario_id",
+          "type": "int",
+          "unsigned": true,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": true,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "integer"
+        }
+      },
+      "indexes": [
+        {
+          "columnNames": [
+            "id"
+          ],
+          "composite": false,
+          "constraint": true,
+          "keyName": "PRIMARY",
+          "primary": true,
+          "unique": true
+        },
+        {
+          "columnNames": [
+            "usuario_id"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "coleccion_usuario_id_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "usuario_id",
+            "nombre"
+          ],
+          "composite": true,
+          "constraint": true,
+          "keyName": "coleccion_usuario_nombre_unique",
+          "primary": false,
+          "unique": true
+        }
+      ],
+      "checks": [],
+      "triggers": [],
+      "foreignKeys": {
+        "coleccion_usuario_id_foreign": {
+          "columnNames": [
+            "usuario_id"
+          ],
+          "constraintName": "coleccion_usuario_id_foreign",
+          "localTableName": "coleccion",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "usuario",
+          "deleteRule": "cascade"
+        }
+      },
+      "comment": null
+    },
+    {
+      "name": "coleccion_juego",
+      "columns": {
+        "coleccion_id": {
+          "name": "coleccion_id",
+          "type": "int",
+          "unsigned": true,
+          "autoincrement": false,
+          "primary": true,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "integer"
+        },
+        "juego_id": {
+          "name": "juego_id",
+          "type": "int",
+          "unsigned": true,
+          "autoincrement": false,
+          "primary": true,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "integer"
+        }
+      },
+      "indexes": [
+        {
+          "columnNames": [
+            "coleccion_id",
+            "juego_id"
+          ],
+          "composite": true,
+          "constraint": true,
+          "keyName": "PRIMARY",
+          "primary": true,
+          "unique": true
+        },
+        {
+          "columnNames": [
+            "coleccion_id"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "coleccion_juego_coleccion_id_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "juego_id"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "coleccion_juego_juego_id_index",
+          "primary": false,
+          "unique": false
+        }
+      ],
+      "checks": [],
+      "triggers": [],
+      "foreignKeys": {
+        "coleccion_juego_coleccion_id_foreign": {
+          "columnNames": [
+            "coleccion_id"
+          ],
+          "constraintName": "coleccion_juego_coleccion_id_foreign",
+          "localTableName": "coleccion_juego",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "coleccion",
+          "updateRule": "cascade",
+          "deleteRule": "cascade"
+        },
+        "coleccion_juego_juego_id_foreign": {
+          "columnNames": [
+            "juego_id"
+          ],
+          "constraintName": "coleccion_juego_juego_id_foreign",
+          "localTableName": "coleccion_juego",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "juego",
+          "updateRule": "cascade",
+          "deleteRule": "cascade"
+        }
+      },
       "comment": null
     },
     {
@@ -670,6 +1097,159 @@
           "composite": false,
           "constraint": true,
           "keyName": "plataforma_nombre_unique",
+          "primary": false,
+          "unique": true
+        }
+      ],
+      "checks": [],
+      "triggers": [],
+      "foreignKeys": {},
+      "comment": null
+    },
+    {
+      "name": "usuario",
+      "columns": {
+        "activo": {
+          "name": "activo",
+          "type": "tinyint(1)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": "true",
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "boolean"
+        },
+        "apellido": {
+          "name": "apellido",
+          "type": "varchar(100)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": 100,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "string"
+        },
+        "email": {
+          "name": "email",
+          "type": "varchar(254)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": true,
+          "length": 254,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "string"
+        },
+        "fecha_creacion": {
+          "name": "fecha_creacion",
+          "type": "datetime",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "datetime"
+        },
+        "id": {
+          "name": "id",
+          "type": "int",
+          "unsigned": true,
+          "autoincrement": true,
+          "primary": true,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "integer"
+        },
+        "nombre": {
+          "name": "nombre",
+          "type": "varchar(100)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 100,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "string"
+        },
+        "rol": {
+          "name": "rol",
+          "type": "enum('user','admin')",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": "'USER'",
+          "comment": null,
+          "collation": null,
+          "enumItems": [
+            "USER",
+            "ADMIN"
+          ],
+          "mappedType": "enum"
+        }
+      },
+      "indexes": [
+        {
+          "columnNames": [
+            "id"
+          ],
+          "composite": false,
+          "constraint": true,
+          "keyName": "PRIMARY",
+          "primary": true,
+          "unique": true
+        },
+        {
+          "columnNames": [
+            "email"
+          ],
+          "composite": false,
+          "constraint": true,
+          "keyName": "usuario_email_unique",
           "primary": false,
           "unique": true
         }
