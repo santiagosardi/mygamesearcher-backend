@@ -11,6 +11,8 @@ import { RolUsuario } from '../usuario/rol-usuario.enum';
 import { PasswordService } from './password.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
+import { JwtService } from '@nestjs/jwt';
+import type { JwtPayload, LoginResponse } from './auth.types';
 
 export type UsuarioPublico = Pick<
   Usuario,
@@ -23,6 +25,7 @@ export class AuthService {
     @InjectRepository(Usuario)
     private readonly usuarioRepository: EntityRepository<Usuario>,
     private readonly passwordService: PasswordService,
+    private readonly jwtService: JwtService,
   ) {}
 
   async register(dto: RegisterDto): Promise<UsuarioPublico> {
@@ -50,7 +53,7 @@ export class AuthService {
     return this.usuarioPublico(usuario);
   }
 
-  async login(dto: LoginDto): Promise<UsuarioPublico> {
+  async login(dto: LoginDto): Promise<LoginResponse> {
     const email = dto.email.trim().toLowerCase();
     const usuario = await this.usuarioRepository.findOne({ email });
     if (
@@ -61,7 +64,13 @@ export class AuthService {
     ) {
       throw new UnauthorizedException('Credenciales inválidas');
     }
-    return this.usuarioPublico(usuario);
+    const payload: JwtPayload = {
+      sub: usuario.id,
+      email: usuario.email,
+      rol: usuario.rol,
+    };
+    const accessToken = await this.jwtService.signAsync(payload);
+    return { user: this.usuarioPublico(usuario), accessToken };
   }
 
   private usuarioPublico(usuario: Usuario): UsuarioPublico {

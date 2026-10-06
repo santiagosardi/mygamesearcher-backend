@@ -12,6 +12,8 @@ import { AuthService } from './auth.service';
 import { PasswordService } from './password.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
+import { JwtService } from '@nestjs/jwt';
+import type { JwtPayload } from './auth.types';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -33,6 +35,7 @@ describe('AuthService', () => {
     email: ' ANA@EXAMPLE.COM ',
     password: 'clave123',
   };
+  const jwt = { signAsync: jest.fn<Promise<string>, [JwtPayload]>() };
 
   function usuario(): Usuario {
     return Object.assign(new Usuario(), {
@@ -49,6 +52,7 @@ describe('AuthService', () => {
     repository.findOne.mockResolvedValue(null);
     passwords.hash.mockResolvedValue('hash-simulado');
     passwords.compare.mockResolvedValue(true);
+    jwt.signAsync.mockResolvedValue('token-simulado');
     em.flush.mockImplementation(() => {
       const guardado = em.persist.mock.calls[0]?.[0];
       if (guardado) {
@@ -62,6 +66,7 @@ describe('AuthService', () => {
         AuthService,
         { provide: getRepositoryToken(Usuario), useValue: repository },
         { provide: PasswordService, useValue: passwords },
+        { provide: JwtService, useValue: jwt },
       ],
     }).compile();
     service = module.get(AuthService);
@@ -94,6 +99,7 @@ describe('AuthService', () => {
     expect(respuesta).not.toHaveProperty('passwordHash');
     expect(respuesta).not.toHaveProperty('password');
     expect(em.flush).toHaveBeenCalledTimes(1);
+    expect(jwt.signAsync).not.toHaveBeenCalled();
   });
 
   it('rechaza email duplicado antes de hashear o persistir', async () => {
@@ -121,7 +127,17 @@ describe('AuthService', () => {
       email: 'ana@example.com',
     });
     expect(passwords.compare).toHaveBeenCalledWith('clave123', 'hash-simulado');
-    expect(respuesta.id).toBe(1);
+    expect(respuesta.user.id).toBe(1);
+    expect(respuesta.accessToken).toBe('token-simulado');
+    expect(jwt.signAsync).toHaveBeenCalledWith({
+      sub: 1,
+      email: 'ana@example.com',
+      rol: RolUsuario.USER,
+    });
+    expect(respuesta.user).not.toHaveProperty('passwordHash');
+    expect(respuesta.user).not.toHaveProperty('password');
+    expect(jwt.signAsync.mock.calls[0][0]).not.toHaveProperty('passwordHash');
+    expect(jwt.signAsync.mock.calls[0][0]).not.toHaveProperty('password');
     expect(respuesta).not.toHaveProperty('passwordHash');
     expect(respuesta).not.toHaveProperty('password');
     expect(em.persist).not.toHaveBeenCalled();
