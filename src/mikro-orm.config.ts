@@ -8,6 +8,7 @@ import { Plataforma } from './plataforma/plataforma.entity';
 import { Caracteristica } from './caracteristica/caracteristica.entity';
 import { Juego } from './juego/juego.entity';
 import { Usuario } from './usuario/usuario.entity';
+import { Biblioteca } from './biblioteca/biblioteca.entity';
 
 export default defineConfig({
   host: process.env.DB_HOST,
@@ -15,7 +16,7 @@ export default defineConfig({
   user: process.env.DB_USER,
   password: process.env.DB_PASS,
   dbName: process.env.DB_NAME,
-  entities: [Genero, Plataforma, Caracteristica, Juego, Usuario],
+  entities: [Genero, Plataforma, Caracteristica, Juego, Usuario, Biblioteca],
   metadataProvider: ReflectMetadataProvider,
   extensions: [Migrator],
   migrations: {

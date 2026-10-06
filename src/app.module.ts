@@ -9,6 +9,7 @@ import { PlataformaModule } from './plataforma/plataforma.module';
 import { CaracteristicaModule } from './caracteristica/caracteristica.module';
 import { JuegoModule } from './juego/juego.module';
 import { UsuarioModule } from './usuario/usuario.module';
+import { BibliotecaModule } from './biblioteca/biblioteca.module';
 import mikroOrmConfig from './mikro-orm.config';
 
 @Module({
@@ -24,6 +25,7 @@ import mikroOrmConfig from './mikro-orm.config';
     CaracteristicaModule,
     JuegoModule,
     UsuarioModule,
+    BibliotecaModule,
   ],
   controllers: [AppController],
   providers: [AppService],
