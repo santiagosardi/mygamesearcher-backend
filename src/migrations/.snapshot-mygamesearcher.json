@@ -2,6 +2,190 @@
   "namespaces": [],
   "tables": [
     {
+      "name": "biblioteca",
+      "columns": {
+        "estado": {
+          "name": "estado",
+          "type": "enum('pendiente','jugando','completado','abandonado')",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": "'PENDIENTE'",
+          "comment": null,
+          "collation": null,
+          "enumItems": [
+            "PENDIENTE",
+            "JUGANDO",
+            "COMPLETADO",
+            "ABANDONADO"
+          ],
+          "mappedType": "enum"
+        },
+        "favorito": {
+          "name": "favorito",
+          "type": "tinyint(1)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": "false",
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "boolean"
+        },
+        "fecha_agregado": {
+          "name": "fecha_agregado",
+          "type": "datetime",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "datetime"
+        },
+        "id": {
+          "name": "id",
+          "type": "int",
+          "unsigned": true,
+          "autoincrement": true,
+          "primary": true,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "integer"
+        },
+        "juego_id": {
+          "name": "juego_id",
+          "type": "int",
+          "unsigned": true,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "integer"
+        },
+        "usuario_id": {
+          "name": "usuario_id",
+          "type": "int",
+          "unsigned": true,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": true,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "integer"
+        }
+      },
+      "indexes": [
+        {
+          "columnNames": [
+            "id"
+          ],
+          "composite": false,
+          "constraint": true,
+          "keyName": "PRIMARY",
+          "primary": true,
+          "unique": true
+        },
+        {
+          "columnNames": [
+            "juego_id"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "biblioteca_juego_id_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "usuario_id"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "biblioteca_usuario_id_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "usuario_id",
+            "juego_id"
+          ],
+          "composite": true,
+          "constraint": true,
+          "keyName": "biblioteca_usuario_juego_unique",
+          "primary": false,
+          "unique": true
+        }
+      ],
+      "checks": [],
+      "triggers": [],
+      "foreignKeys": {
+        "biblioteca_juego_id_foreign": {
+          "columnNames": [
+            "juego_id"
+          ],
+          "constraintName": "biblioteca_juego_id_foreign",
+          "localTableName": "biblioteca",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "juego",
+          "deleteRule": "cascade"
+        },
+        "biblioteca_usuario_id_foreign": {
+          "columnNames": [
+            "usuario_id"
+          ],
+          "constraintName": "biblioteca_usuario_id_foreign",
+          "localTableName": "biblioteca",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "usuario",
+          "deleteRule": "cascade"
+        }
+      },
+      "comment": null
+    },
+    {
       "name": "caracteristica",
       "columns": {
         "descripcion": {
