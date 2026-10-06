@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -8,6 +9,7 @@ import { InjectRepository } from '@mikro-orm/nestjs';
 import { Usuario } from '../usuario/usuario.entity';
 import { Juego } from '../juego/juego.entity';
 import { Biblioteca } from '../biblioteca/biblioteca.entity';
+import { Coleccion } from '../coleccion/coleccion.entity';
 import type {
   Recomendacion,
   RespuestaRecomendaciones,
@@ -22,9 +24,20 @@ export class RecomendacionService {
     private readonly bibliotecaRepository: EntityRepository<Biblioteca>,
     @InjectRepository(Juego)
     private readonly juegoRepository: EntityRepository<Juego>,
+    @InjectRepository(Coleccion)
+    private readonly coleccionRepository: EntityRepository<Coleccion>,
   ) {}
 
-  async recomendar(usuarioId: number): Promise<RespuestaRecomendaciones> {
+  async recomendar(
+    usuarioId: number,
+    coleccionId?: number,
+  ): Promise<RespuestaRecomendaciones> {
+    if (
+      coleccionId !== undefined &&
+      (!Number.isSafeInteger(coleccionId) || coleccionId <= 0)
+    ) {
+      throw new BadRequestException('coleccionId debe ser un entero positivo');
+    }
     if (!Number.isSafeInteger(usuarioId) || usuarioId <= 0) {
       throw new BadRequestException('usuarioId debe ser un entero positivo');
     }
@@ -44,7 +57,40 @@ export class RecomendacionService {
         ],
       },
     );
-    if (biblioteca.length === 0) {
+    let juegosReferencia: Juego[] = biblioteca.map((entrada) => entrada.juego);
+    if (coleccionId !== undefined) {
+      const coleccion = await this.coleccionRepository.findOne(
+        { id: coleccionId },
+        {
+          populate: [
+            'usuario',
+            'juegos.generos',
+            'juegos.plataformas',
+            'juegos.caracteristicas',
+          ],
+        },
+      );
+      if (!coleccion) {
+        throw new NotFoundException(
+          `No existe la colección con id ${coleccionId}`,
+        );
+      }
+      if (coleccion.usuario.id !== usuarioId) {
+        throw new ForbiddenException(
+          'La colección no pertenece al usuario indicado',
+        );
+      }
+      juegosReferencia = coleccion.juegos.getItems();
+      if (juegosReferencia.length === 0) {
+        return {
+          usuarioId,
+          recomendaciones: [],
+          mensaje:
+            'La colección está vacía: no hay juegos suficientes para generar preferencias',
+        };
+      }
+    }
+    if (coleccionId === undefined && biblioteca.length === 0) {
       return {
         usuarioId,
         recomendaciones: [],
@@ -55,15 +101,25 @@ export class RecomendacionService {
     const generos = new Map<number, number>();
     const caracteristicas = new Map<number, number>();
     const plataformas = new Map<number, number>();
-    for (const entrada of biblioteca) {
-      const peso = entrada.favorito ? 2 : 1;
-      this.acumularPesos(generos, entrada.juego.generos, peso);
-      this.acumularPesos(caracteristicas, entrada.juego.caracteristicas, peso);
-      this.acumularPesos(plataformas, entrada.juego.plataformas, peso);
+    const favoritos = new Map(
+      biblioteca.map((entrada) => [entrada.juego.id, entrada.favorito]),
+    );
+    for (const juego of juegosReferencia) {
+      // Los juegos fuera de Biblioteca tienen el peso normal (1).
+      const peso = favoritos.get(juego.id) ? 2 : 1;
+      this.acumularPesos(generos, juego.generos, peso);
+      this.acumularPesos(caracteristicas, juego.caracteristicas, peso);
+      this.acumularPesos(plataformas, juego.plataformas, peso);
     }
 
+    const idsExcluidos = new Set(biblioteca.map((entrada) => entrada.juego.id));
+    if (coleccionId !== undefined) {
+      for (const juego of juegosReferencia) {
+        idsExcluidos.add(juego.id);
+      }
+    }
     const candidatos = await this.juegoRepository.find(
-      { id: { $nin: biblioteca.map((entrada) => entrada.juego.id) } },
+      { id: { $nin: [...idsExcluidos] } },
       { populate: ['generos', 'plataformas', 'caracteristicas'] },
     );
     const recomendaciones: Recomendacion[] = [];

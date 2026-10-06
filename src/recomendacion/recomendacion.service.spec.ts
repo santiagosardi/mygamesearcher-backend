@@ -1,10 +1,15 @@
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  NotFoundException,
+} from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { getRepositoryToken } from '@mikro-orm/nestjs';
 import { Collection } from '@mikro-orm/core';
 import { Usuario } from '../usuario/usuario.entity';
 import { Juego } from '../juego/juego.entity';
 import { Biblioteca } from '../biblioteca/biblioteca.entity';
+import { Coleccion } from '../coleccion/coleccion.entity';
 import { RecomendacionService } from './recomendacion.service';
 
 function crearJuego(id: number, relacionado = true): Juego {
@@ -39,6 +44,16 @@ describe('RecomendacionService', () => {
   let juegoRepository: {
     find: jest.Mock<Promise<Juego[]>, [unknown, unknown]>;
   };
+  let coleccionRepository: {
+    findOne: jest.Mock<Promise<Coleccion | null>, [unknown, unknown]>;
+  };
+
+  function prepararColeccion(juegos: Juego[], usuarioId = 1): void {
+    const coleccion = new Coleccion();
+    coleccion.usuario = Object.assign(new Usuario(), { id: usuarioId });
+    coleccion.juegos = new Collection(coleccion, juegos);
+    coleccionRepository.findOne.mockResolvedValue(coleccion);
+  }
 
   beforeEach(async () => {
     usuarioRepository = {
@@ -52,6 +67,9 @@ describe('RecomendacionService', () => {
     juegoRepository = {
       find: jest.fn<Promise<Juego[]>, [unknown, unknown]>(),
     };
+    coleccionRepository = {
+      findOne: jest.fn<Promise<Coleccion | null>, [unknown, unknown]>(),
+    };
     const module = await Test.createTestingModule({
       providers: [
         RecomendacionService,
@@ -61,9 +79,150 @@ describe('RecomendacionService', () => {
           useValue: bibliotecaRepository,
         },
         { provide: getRepositoryToken(Juego), useValue: juegoRepository },
+        {
+          provide: getRepositoryToken(Coleccion),
+          useValue: coleccionRepository,
+        },
       ],
     }).compile();
     service = module.get(RecomendacionService);
+  });
+
+  it.each([0, -1, 1.5, NaN, Infinity])(
+    'rechaza coleccionId inválido: %s',
+    async (id) => {
+      await expect(service.recomendar(1, id)).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
+      expect(coleccionRepository.findOne).not.toHaveBeenCalled();
+    },
+  );
+
+  it('devuelve 404 si la colección no existe incluso con biblioteca vacía', async () => {
+    bibliotecaRepository.find.mockResolvedValue([]);
+    coleccionRepository.findOne.mockResolvedValue(null);
+    await expect(service.recomendar(1, 5)).rejects.toBeInstanceOf(
+      NotFoundException,
+    );
+    expect(juegoRepository.find).not.toHaveBeenCalled();
+  });
+
+  it('rechaza con 403 una colección de otro usuario', async () => {
+    bibliotecaRepository.find.mockResolvedValue([]);
+    prepararColeccion([crearJuego(1)], 2);
+    await expect(service.recomendar(1, 5)).rejects.toBeInstanceOf(
+      ForbiddenException,
+    );
+    expect(juegoRepository.find).not.toHaveBeenCalled();
+  });
+
+  it('informa colección vacía sin consultar candidatos', async () => {
+    bibliotecaRepository.find.mockResolvedValue([
+      crearEntrada(crearJuego(1), true),
+    ]);
+    prepararColeccion([]);
+    const respuesta = await service.recomendar(1, 5);
+    expect(respuesta.recomendaciones).toEqual([]);
+    expect(respuesta.mensaje).toContain('colección está vacía');
+    expect(juegoRepository.find).not.toHaveBeenCalled();
+  });
+
+  it('usa solo la colección, respeta favoritos y excluye toda la biblioteca', async () => {
+    const referencia = crearJuego(1);
+    const fueraDeColeccion = crearJuego(2, false);
+    fueraDeColeccion.generos = new Collection(fueraDeColeccion, [
+      { id: 2, nombre: 'Accion' },
+    ]);
+    bibliotecaRepository.find.mockResolvedValue([
+      crearEntrada(referencia, true),
+      crearEntrada(fueraDeColeccion, true),
+    ]);
+    prepararColeccion([referencia]);
+    const candidato = crearJuego(3);
+    const sinAfinidad = crearJuego(4, false);
+    sinAfinidad.generos = new Collection(sinAfinidad, [
+      { id: 2, nombre: 'Accion' },
+    ]);
+    juegoRepository.find.mockResolvedValue([sinAfinidad, candidato]);
+
+    const respuesta = await service.recomendar(1, 5);
+    expect(respuesta.recomendaciones).toEqual([
+      {
+        juego: candidato,
+        puntaje: 12,
+        motivos: [
+          'Comparte género RPG: +6',
+          'Comparte característica Mundo abierto: +4',
+          'Comparte plataforma PC: +2',
+        ],
+      },
+    ]);
+    expect(juegoRepository.find).toHaveBeenCalledWith(
+      { id: { $nin: [1, 2] } },
+      { populate: ['generos', 'plataformas', 'caracteristicas'] },
+    );
+    expect(coleccionRepository.findOne).toHaveBeenCalledWith(
+      { id: 5 },
+      {
+        populate: [
+          'usuario',
+          'juegos.generos',
+          'juegos.plataformas',
+          'juegos.caracteristicas',
+        ],
+      },
+    );
+  });
+
+  it('usa peso uno para un juego de colección que no está en Biblioteca', async () => {
+    bibliotecaRepository.find.mockResolvedValue([]);
+    prepararColeccion([crearJuego(1)]);
+    juegoRepository.find.mockResolvedValue([crearJuego(2)]);
+    const respuesta = await service.recomendar(1, 5);
+    expect(respuesta.recomendaciones[0].puntaje).toBe(6);
+    expect(respuesta.recomendaciones[0].motivos).toEqual([
+      'Comparte género RPG: +3',
+      'Comparte característica Mundo abierto: +2',
+      'Comparte plataforma PC: +1',
+    ]);
+    expect(juegoRepository.find).toHaveBeenCalledWith(
+      { id: { $nin: [1] } },
+      { populate: ['generos', 'plataformas', 'caracteristicas'] },
+    );
+  });
+
+  it('excluye la unión de Biblioteca y colección sin repetir IDs', async () => {
+    bibliotecaRepository.find.mockResolvedValue([
+      crearEntrada(crearJuego(1), false),
+      crearEntrada(crearJuego(2), true),
+    ]);
+    prepararColeccion([crearJuego(2), crearJuego(3)]);
+    juegoRepository.find.mockResolvedValue([crearJuego(4)]);
+
+    const respuesta = await service.recomendar(1, 5);
+
+    expect(juegoRepository.find).toHaveBeenCalledWith(
+      { id: { $nin: [1, 2, 3] } },
+      { populate: ['generos', 'plataformas', 'caracteristicas'] },
+    );
+    expect(respuesta.recomendaciones.map((item) => item.juego.id)).toEqual([4]);
+  });
+
+  it('no recomienda el juego fuente cuando Biblioteca está vacía', async () => {
+    bibliotecaRepository.find.mockResolvedValue([]);
+    const fuente = crearJuego(1);
+    const candidato = crearJuego(2);
+    prepararColeccion([fuente]);
+    juegoRepository.find.mockImplementation((filtro: unknown) => {
+      const { id } = filtro as { id: { $nin: number[] } };
+      return Promise.resolve(
+        [fuente, candidato].filter((juego) => !id.$nin.includes(juego.id)),
+      );
+    });
+
+    const respuesta = await service.recomendar(1, 5);
+
+    expect(respuesta.recomendaciones.map((item) => item.juego.id)).toEqual([2]);
   });
 
   it.each([0, -1, 1.5, NaN])('rechaza usuarioId inválido: %s', async (id) => {
@@ -99,6 +258,7 @@ describe('RecomendacionService', () => {
 
     const respuesta = await service.recomendar(1);
 
+    expect(coleccionRepository.findOne).not.toHaveBeenCalled();
     expect(respuesta.recomendaciones).toEqual([
       {
         juego: candidato,
