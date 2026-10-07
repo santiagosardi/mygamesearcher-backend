@@ -19,6 +19,7 @@ import { AuthModule } from './auth/auth.module';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      ignoreEnvFile: process.env.NODE_ENV === 'e2e',
     }),
 
     MikroOrmModule.forRoot(mikroOrmConfig),
