@@ -2,3 +2,5 @@ node_modules
 dist
 .env
 .env.e2e
+
+src/migrations/.snapshot-mygamesearcher_e2e.json
