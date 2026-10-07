@@ -9,7 +9,7 @@ async function bootstrap() {
     origin:
       process.env.NODE_ENV === 'e2e'
         ? e2eCorsOrigins(process.env)
-        : 'http://localhost:5173',
+        : (process.env.FRONTEND_ORIGIN ?? 'http://localhost:5173'),
   });
   app.useGlobalPipes(
     new ValidationPipe({

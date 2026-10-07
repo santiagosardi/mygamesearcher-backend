@@ -5,6 +5,9 @@
   "author": "",
   "private": true,
   "license": "UNLICENSED",
+  "engines": {
+    "node": "24.x"
+  },
   "scripts": {
     "build": "nest build",
     "seed": "ts-node src/seed/seed.ts",
@@ -17,6 +20,7 @@
     "e2e:db:seed": "npm run build && node dist/e2e/runner.js seed",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
+    "migration:up:prod": "mikro-orm migration:up --config ./dist/mikro-orm.config.js",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "test": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js",
     "test:watch": "jest --watch",
@@ -25,6 +29,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
+    "@mikro-orm/cli": "^7.2.3",
     "@mikro-orm/core": "^7.2.3",
     "@mikro-orm/decorators": "^7.2.3",
     "@mikro-orm/migrations": "^7.2.3",
@@ -38,13 +43,13 @@
     "bcryptjs": "^3.0.3",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.15.1",
+    "dotenv": "17.4.1",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",
     "@eslint/js": "^9.18.0",
-    "@mikro-orm/cli": "^7.2.3",
     "@nestjs/cli": "^11.0.0",
     "@nestjs/schematics": "^11.0.0",
     "@nestjs/testing": "^11.0.1",
