@@ -78,6 +78,36 @@ describe('Seed del catálogo (sin MySQL)', () => {
     }
   });
 
+  it('carga las 46 portadas de Steam y deja cuatro juegos sin portada', async () => {
+    const conPortada = CATALOGO.filter((juego) => juego.urlImagen);
+    expect(conPortada).toHaveLength(46);
+    for (const juego of conPortada) {
+      expect(juego.urlImagen).toMatch(
+        /^https:\/\/cdn\.cloudflare\.steamstatic\.com\/steam\/apps\/\d+\/header\.jpg$/,
+      );
+    }
+    expect(
+      CATALOGO.filter((juego) => !juego.urlImagen)
+        .map((juego) => juego.titulo)
+        .sort(),
+    ).toEqual(['Fortnite', 'Gran Turismo 7', 'Minecraft', 'Valorant']);
+    expect(
+      CATALOGO.find((juego) => juego.titulo === 'God of War Ragnarök')
+        ?.urlImagen,
+    ).toBe(
+      'https://cdn.cloudflare.steamstatic.com/steam/apps/2322010/header.jpg',
+    );
+
+    const almacen = crearAlmacen();
+    await seedCatalogo(almacen.em);
+    for (const datos of CATALOGO) {
+      expect(
+        almacen.juegos.find((juego) => juego.titulo === datos.titulo)
+          ?.urlImagen,
+      ).toBe(datos.urlImagen);
+    }
+  });
+
   it('reutiliza los registros y no duplica relaciones en dos cargas consecutivas', async () => {
     const almacen = crearAlmacen();
     const primera = await seedCatalogo(almacen.em);
@@ -132,6 +162,38 @@ describe('Seed del catálogo (sin MySQL)', () => {
       expect(juego.generos.getItems().some((g) => g.nombre === 'RPG')).toBe(
         true,
       );
+    }
+  });
+
+  it('completa la portada del catálogo solo cuando el juego no tiene una', async () => {
+    const original = CATALOGO[0];
+    const urlImagen = 'https://example.invalid/portada-test.png';
+    CATALOGO[0] = { ...original, urlImagen };
+
+    try {
+      const almacen = crearAlmacen();
+      const juego = new Juego();
+      juego.titulo = original.titulo;
+      almacen.juegos.push(juego);
+      expect(juego.urlImagen).toBeUndefined();
+
+      await seedCatalogo(almacen.em);
+      expect(juego.urlImagen).toBe(urlImagen);
+
+      juego.urlImagen = 'https://example.invalid/portada-previa.png';
+      await seedCatalogo(almacen.em);
+      expect(juego.urlImagen).toBe(
+        'https://example.invalid/portada-previa.png',
+      );
+
+      const nuevoAlmacen = crearAlmacen();
+      await seedCatalogo(nuevoAlmacen.em);
+      expect(
+        nuevoAlmacen.juegos.find((j) => j.titulo === original.titulo)
+          ?.urlImagen,
+      ).toBe(urlImagen);
+    } finally {
+      CATALOGO[0] = original;
     }
   });
 

@@ -43,6 +43,7 @@ export const CARACTERISTICAS = [
 export interface JuegoSeed {
   titulo: string;
   descripcion: string;
+  urlImagen?: string;
   generos: (typeof GENEROS)[number][];
   plataformas: (typeof PLATAFORMAS)[number][];
   caracteristicas: (typeof CARACTERISTICAS)[number][];
@@ -67,16 +68,75 @@ const pcActual: JuegoSeed['plataformas'] = [
 ];
 const todas: JuegoSeed['plataformas'] = [...pcConsolas, 'Nintendo Switch'];
 
+// App IDs revisados; las portadas se resuelven sin consultas externas.
+const STEAM_APP_IDS: Readonly<Record<string, number>> = {
+  'Elden Ring': 1245620,
+  'The Witcher 3': 292030,
+  'Dark Souls III': 374320,
+  'Sekiro: Shadows Die Twice': 814380,
+  'Cyberpunk 2077': 1091500,
+  "Baldur's Gate 3": 1086940,
+  'Divinity: Original Sin 2': 435150,
+  'The Elder Scrolls V: Skyrim': 489830,
+  'Fallout 4': 377160,
+  'Red Dead Redemption 2': 1174180,
+  'Grand Theft Auto V': 271590,
+  'God of War': 1593500,
+  'God of War Ragnarök': 2322010,
+  'Horizon Zero Dawn': 1151640,
+  'Horizon Forbidden West': 2420110,
+  "Assassin's Creed Odyssey": 812140,
+  "Assassin's Creed Valhalla": 2208920,
+  'Hogwarts Legacy': 990080,
+  'Resident Evil 2': 883710,
+  'Resident Evil 4': 2050650,
+  'Resident Evil Village': 1196590,
+  'Silent Hill 2': 2124490,
+  'DOOM Eternal': 782330,
+  DOOM: 379720,
+  'Halo Infinite': 1240440,
+  'Counter-Strike 2': 730,
+  'Overwatch 2': 2357570,
+  'Apex Legends': 1172470,
+  Terraria: 105600,
+  'Stardew Valley': 413150,
+  Hades: 1145360,
+  'Hollow Knight': 367520,
+  Celeste: 504230,
+  Cuphead: 268910,
+  'Dead Cells': 588650,
+  'Civilization VI': 289070,
+  'Age of Empires IV': 1466860,
+  'Cities: Skylines': 255710,
+  'The Sims 4': 1222670,
+  'Forza Horizon 5': 1551360,
+  'EA Sports FC 24': 2195250,
+  'Rocket League': 252950,
+  'Portal 2': 620,
+  'It Takes Two': 1426210,
+  'Monster Hunter: World': 582010,
+  'Death Stranding': 1190460,
+};
+
+const PORTADAS: Readonly<Record<string, string>> = Object.fromEntries(
+  Object.entries(STEAM_APP_IDS).map(([titulo, appId]) => [
+    titulo,
+    `https://cdn.cloudflare.steamstatic.com/steam/apps/${appId}/header.jpg`,
+  ]),
+);
+
 function juego(
   titulo: string,
   descripcion: string,
   generos: JuegoSeed['generos'],
   plataformas: JuegoSeed['plataformas'],
   caracteristicas: JuegoSeed['caracteristicas'],
+  urlImagen: string | undefined = PORTADAS[titulo],
 ): JuegoSeed {
   return {
     titulo,
     descripcion,
+    urlImagen,
     generos,
     plataformas: [...plataformas],
     caracteristicas,
@@ -84,8 +144,8 @@ function juego(
 }
 
 // Plataformas con versiones publicadas; no se enumeran por retrocompatibilidad.
-// Los títulos ambiguos indican la edición elegida. Fechas e imágenes se omiten
-// para no sobrescribir metadatos existentes con información aproximada.
+// Los títulos ambiguos indican la edición elegida. Las fechas se omiten
+// para no incorporar información aproximada.
 export const CATALOGO: JuegoSeed[] = [
   juego(
     'Elden Ring',
