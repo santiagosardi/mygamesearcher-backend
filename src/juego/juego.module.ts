@@ -1,3 +1,4 @@
+import { AuthModule } from '../auth/auth.module';
 import { Module } from '@nestjs/common';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { Juego } from './juego.entity';
@@ -9,6 +10,7 @@ import { JuegoController } from './juego.controller';
 
 @Module({
   imports: [
+    AuthModule,
     MikroOrmModule.forFeature([Juego, Genero, Plataforma, Caracteristica]),
   ],
   providers: [JuegoService],

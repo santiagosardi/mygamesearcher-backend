@@ -11,10 +11,6 @@ import {
 } from 'class-validator';
 
 export class CreateColeccionDto {
-  @IsInt()
-  @IsPositive()
-  usuarioId!: number;
-
   @Transform(({ value }: { value: unknown }) =>
     typeof value === 'string' ? value.trim() : value,
   )

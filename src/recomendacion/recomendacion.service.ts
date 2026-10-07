@@ -1,6 +1,5 @@
 import {
   BadRequestException,
-  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -38,9 +37,7 @@ export class RecomendacionService {
     ) {
       throw new BadRequestException('coleccionId debe ser un entero positivo');
     }
-    if (!Number.isSafeInteger(usuarioId) || usuarioId <= 0) {
-      throw new BadRequestException('usuarioId debe ser un entero positivo');
-    }
+
     const usuario = await this.usuarioRepository.findOne({ id: usuarioId });
     if (!usuario) {
       throw new NotFoundException(
@@ -60,7 +57,7 @@ export class RecomendacionService {
     let juegosReferencia: Juego[] = biblioteca.map((entrada) => entrada.juego);
     if (coleccionId !== undefined) {
       const coleccion = await this.coleccionRepository.findOne(
-        { id: coleccionId },
+        { id: coleccionId, usuario: usuarioId },
         {
           populate: [
             'usuario',
@@ -75,11 +72,7 @@ export class RecomendacionService {
           `No existe la colección con id ${coleccionId}`,
         );
       }
-      if (coleccion.usuario.id !== usuarioId) {
-        throw new ForbiddenException(
-          'La colección no pertenece al usuario indicado',
-        );
-      }
+
       juegosReferencia = coleccion.juegos.getItems();
       if (juegosReferencia.length === 0) {
         return {

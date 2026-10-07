@@ -1,3 +1,7 @@
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import type { AuthenticatedUser } from '../auth/auth.types';
+import { PersonalQueryDto } from '../auth/dto/personal-query.dto';
 import {
   Controller,
   Get,
@@ -8,43 +12,64 @@ import {
   Body,
   Query,
   ParseIntPipe,
+  UseGuards,
 } from '@nestjs/common';
 import { ColeccionService } from './coleccion.service';
 import { CreateColeccionDto } from './dto/create-coleccion.dto';
 import { UpdateColeccionDto } from './dto/update-coleccion.dto';
 
 @Controller('colecciones')
+@UseGuards(JwtAuthGuard)
 export class ColeccionController {
   constructor(private readonly coleccionService: ColeccionService) {}
 
   @Get()
   findAll(
-    @Query('usuarioId', new ParseIntPipe({ optional: true }))
-    usuarioId?: number,
+    @CurrentUser() user: AuthenticatedUser,
+    @Query() query: PersonalQueryDto = {},
   ) {
-    return this.coleccionService.findAll(usuarioId);
+    void query;
+    return this.coleccionService.findAll(user.id);
   }
 
   @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.coleccionService.findOne(id);
+  findOne(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser() user: AuthenticatedUser,
+    @Query() query: PersonalQueryDto = {},
+  ) {
+    void query;
+    return this.coleccionService.findOne(id, user.id);
   }
 
   @Post()
-  create(@Body() dto: CreateColeccionDto) {
-    return this.coleccionService.create(dto);
+  create(
+    @Body() dto: CreateColeccionDto,
+    @CurrentUser() user: AuthenticatedUser,
+    @Query() query: PersonalQueryDto = {},
+  ) {
+    void query;
+    return this.coleccionService.create(dto, user.id);
   }
 
   @Patch(':id')
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateColeccionDto,
+    @CurrentUser() user: AuthenticatedUser,
+    @Query() query: PersonalQueryDto = {},
   ) {
-    return this.coleccionService.update(id, dto);
+    void query;
+    return this.coleccionService.update(id, dto, user.id);
   }
 
   @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: number) {
-    return this.coleccionService.remove(id);
+  remove(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser() user: AuthenticatedUser,
+    @Query() query: PersonalQueryDto = {},
+  ) {
+    void query;
+    return this.coleccionService.remove(id, user.id);
   }
 }

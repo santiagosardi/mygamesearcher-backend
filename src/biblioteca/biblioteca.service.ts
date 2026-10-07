@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   ConflictException,
   Injectable,
   NotFoundException,
@@ -24,22 +23,16 @@ export class BibliotecaService {
     private readonly juegoRepository: EntityRepository<Juego>,
   ) {}
 
-  findAll(usuarioId?: number): Promise<Biblioteca[]> {
-    if (
-      usuarioId !== undefined &&
-      (!Number.isSafeInteger(usuarioId) || usuarioId <= 0)
-    ) {
-      throw new BadRequestException('usuarioId debe ser un entero positivo');
-    }
+  findAll(usuarioId: number): Promise<Biblioteca[]> {
     return this.bibliotecaRepository.find(
-      usuarioId === undefined ? {} : { usuario: usuarioId },
+      { usuario: usuarioId },
       { populate: ['usuario', 'juego'] },
     );
   }
 
-  async findOne(id: number): Promise<Biblioteca> {
+  async findOne(id: number, usuarioId: number): Promise<Biblioteca> {
     const biblioteca = await this.bibliotecaRepository.findOne(
-      { id },
+      { id, usuario: usuarioId },
       { populate: ['usuario', 'juego'] },
     );
     if (!biblioteca) {
@@ -50,11 +43,14 @@ export class BibliotecaService {
     return biblioteca;
   }
 
-  async create(dto: CreateBibliotecaDto): Promise<Biblioteca> {
-    const usuario = await this.usuarioRepository.findOne({ id: dto.usuarioId });
+  async create(
+    dto: CreateBibliotecaDto,
+    usuarioId: number,
+  ): Promise<Biblioteca> {
+    const usuario = await this.usuarioRepository.findOne({ id: usuarioId });
     if (!usuario) {
       throw new NotFoundException(
-        `No se encontró el usuario con id ${dto.usuarioId}`,
+        `No se encontró el usuario con id ${usuarioId}`,
       );
     }
     const juego = await this.juegoRepository.findOne({ id: dto.juegoId });
@@ -98,8 +94,12 @@ export class BibliotecaService {
     return biblioteca;
   }
 
-  async update(id: number, dto: UpdateBibliotecaDto): Promise<Biblioteca> {
-    const biblioteca = await this.findOne(id);
+  async update(
+    id: number,
+    dto: UpdateBibliotecaDto,
+    usuarioId: number,
+  ): Promise<Biblioteca> {
+    const biblioteca = await this.findOne(id, usuarioId);
     if (dto.estado !== undefined) {
       biblioteca.estado = dto.estado;
     }
@@ -110,8 +110,8 @@ export class BibliotecaService {
     return biblioteca;
   }
 
-  async remove(id: number): Promise<void> {
-    const biblioteca = await this.findOne(id);
+  async remove(id: number, usuarioId: number): Promise<void> {
+    const biblioteca = await this.findOne(id, usuarioId);
     const entityManager = this.bibliotecaRepository.getEntityManager();
     entityManager.remove(biblioteca);
     await entityManager.flush();
