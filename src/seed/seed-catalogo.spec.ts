@@ -78,6 +78,36 @@ describe('Seed del catálogo (sin MySQL)', () => {
     }
   });
 
+  it('carga las 46 portadas de Steam y deja cuatro juegos sin portada', async () => {
+    const conPortada = CATALOGO.filter((juego) => juego.urlImagen);
+    expect(conPortada).toHaveLength(46);
+    for (const juego of conPortada) {
+      expect(juego.urlImagen).toMatch(
+        /^https:\/\/cdn\.cloudflare\.steamstatic\.com\/steam\/apps\/\d+\/header\.jpg$/,
+      );
+    }
+    expect(
+      CATALOGO.filter((juego) => !juego.urlImagen)
+        .map((juego) => juego.titulo)
+        .sort(),
+    ).toEqual(['Fortnite', 'Gran Turismo 7', 'Minecraft', 'Valorant']);
+    expect(
+      CATALOGO.find((juego) => juego.titulo === 'God of War Ragnarök')
+        ?.urlImagen,
+    ).toBe(
+      'https://cdn.cloudflare.steamstatic.com/steam/apps/2322010/header.jpg',
+    );
+
+    const almacen = crearAlmacen();
+    await seedCatalogo(almacen.em);
+    for (const datos of CATALOGO) {
+      expect(
+        almacen.juegos.find((juego) => juego.titulo === datos.titulo)
+          ?.urlImagen,
+      ).toBe(datos.urlImagen);
+    }
+  });
+
   it('reutiliza los registros y no duplica relaciones en dos cargas consecutivas', async () => {
     const almacen = crearAlmacen();
     const primera = await seedCatalogo(almacen.em);
