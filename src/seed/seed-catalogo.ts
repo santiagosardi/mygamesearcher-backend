@@ -58,6 +58,9 @@ export async function seedCatalogo(em: EntityManager) {
         creados++;
       }
       juego.descripcion = datos.descripcion;
+      if (!juego.urlImagen && datos.urlImagen) {
+        juego.urlImagen = datos.urlImagen;
+      }
       // Unión de relaciones: mantiene cualquier clasificación previa.
       for (const nombre of datos.generos)
         juego.generos.add(generos.get(nombre)!);

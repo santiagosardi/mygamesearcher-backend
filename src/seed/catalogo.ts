@@ -43,6 +43,7 @@ export const CARACTERISTICAS = [
 export interface JuegoSeed {
   titulo: string;
   descripcion: string;
+  urlImagen?: string;
   generos: (typeof GENEROS)[number][];
   plataformas: (typeof PLATAFORMAS)[number][];
   caracteristicas: (typeof CARACTERISTICAS)[number][];
@@ -73,10 +74,12 @@ function juego(
   generos: JuegoSeed['generos'],
   plataformas: JuegoSeed['plataformas'],
   caracteristicas: JuegoSeed['caracteristicas'],
+  urlImagen?: string,
 ): JuegoSeed {
   return {
     titulo,
     descripcion,
+    urlImagen,
     generos,
     plataformas: [...plataformas],
     caracteristicas,

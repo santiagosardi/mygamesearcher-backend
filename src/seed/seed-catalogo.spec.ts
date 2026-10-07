@@ -135,6 +135,38 @@ describe('Seed del catálogo (sin MySQL)', () => {
     }
   });
 
+  it('completa la portada del catálogo solo cuando el juego no tiene una', async () => {
+    const original = CATALOGO[0];
+    const urlImagen = 'https://example.invalid/portada-test.png';
+    CATALOGO[0] = { ...original, urlImagen };
+
+    try {
+      const almacen = crearAlmacen();
+      const juego = new Juego();
+      juego.titulo = original.titulo;
+      almacen.juegos.push(juego);
+      expect(juego.urlImagen).toBeUndefined();
+
+      await seedCatalogo(almacen.em);
+      expect(juego.urlImagen).toBe(urlImagen);
+
+      juego.urlImagen = 'https://example.invalid/portada-previa.png';
+      await seedCatalogo(almacen.em);
+      expect(juego.urlImagen).toBe(
+        'https://example.invalid/portada-previa.png',
+      );
+
+      const nuevoAlmacen = crearAlmacen();
+      await seedCatalogo(nuevoAlmacen.em);
+      expect(
+        nuevoAlmacen.juegos.find((j) => j.titulo === original.titulo)
+          ?.urlImagen,
+      ).toBe(urlImagen);
+    } finally {
+      CATALOGO[0] = original;
+    }
+  });
+
   it('rechaza un título ambiguo sin elegir ni actualizar un duplicado', async () => {
     const almacen = crearAlmacen();
     for (const id of [2, 9]) {
