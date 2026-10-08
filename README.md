@@ -35,7 +35,7 @@ Frontend y backend están separados y se comunican por HTTP mediante API REST, c
 
 ## Tecnologías
 
-- Backend: NestJS, TypeScript, MikroORM 7, MySQL 8, JWT y bcryptjs.
+- Backend: NestJS, TypeScript, MikroORM 7.2.3, mysql2, MySQL 8, JWT y bcryptjs.
 - Testing del backend: Jest.
 - Infraestructura: Render y Aiven MySQL.
 - Frontend relacionado: React 19, TypeScript y Vite, desplegado en Vercel.
@@ -134,7 +134,7 @@ Alternativa después de `npm run build`:
 node dist/seed/seed.js
 ```
 
-Procesa géneros, plataformas, características y 50 juegos dentro de una transacción. Reutiliza atributos por nombre y juegos por título, actualiza descripciones, conserva imágenes personalizadas existentes y completa imágenes ausentes cuando el catálogo tiene una URL. Agrega relaciones sin borrar las previas.
+El catálogo final incluye 147 juegos, 13 géneros, 6 plataformas y 15 características. El seed procesa el catálogo dentro de una transacción. Reutiliza atributos por nombre y juegos por título, actualiza descripciones, conserva imágenes personalizadas existentes y completa imágenes ausentes cuando el catálogo tiene una URL. Agrega relaciones sin borrar las previas.
 
 Es reutilizable en ejecuciones consecutivas. No garantiza evitar duplicados ante escrituras concurrentes, porque el título no es UNIQUE. Rechaza títulos que coincidan con varios juegos existentes.
 
@@ -160,7 +160,7 @@ La infraestructura E2E aislada es independiente. Los flujos Playwright fueron tr
 
 ## Deploy
 
-Producción utiliza la rama `main`: [frontend en Vercel](https://mygamesearcher-frontend-fawn.vercel.app), [backend en Render](https://mygamesearcher-backend.onrender.com) y MySQL 8 en Aiven. Las migraciones están aplicadas y el catálogo de 50 juegos está cargado.
+Producción utiliza la rama `main`: [frontend en Vercel](https://mygamesearcher-frontend-fawn.vercel.app), [backend en Render](https://mygamesearcher-backend.onrender.com) y MySQL 8 en Aiven. Las migraciones están aplicadas y el catálogo final de 147 juegos, 13 géneros, 6 plataformas y 15 características está cargado.
 
 Configuración actual de Render, build:
 
