@@ -1,98 +1,184 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# MyGameSearcher - Backend
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+API REST de MyGameSearcher encargada de autenticación, reglas de negocio, recursos personales, recomendaciones y persistencia.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+- [Backend desplegado](https://mygamesearcher-backend.onrender.com)
+- [Frontend desplegado](https://mygamesearcher-frontend-fawn.vercel.app)
+- [Repositorio backend](https://github.com/santiagosardi/mygamesearcher-backend)
 
-## Description
+## Integrantes
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+- Santiago Sardi
+- Santino Ripacolli
 
-## Project setup
+## Funcionalidades
 
-```bash
-$ npm install
+- Registro e inicio de sesión con autenticación JWT.
+- Roles USER y ADMIN y protección de rutas administrativas.
+- CRUD de juegos, géneros, plataformas y características.
+- Biblioteca personal con estados PENDIENTE, JUGANDO, COMPLETADO y ABANDONADO.
+- Favoritos y colecciones.
+- Recomendaciones determinísticas y explicables, sin IA.
+- Recursos personales asociados al usuario autenticado.
+
+## Arquitectura
+
+```text
+React / Vercel
+      ↓ HTTPS / API REST + JWT
+NestJS / Render
+      ↓ MikroORM / conexión SSL
+MySQL / Aiven
 ```
 
-## Compile and run the project
+Frontend y backend están separados y se comunican por HTTP mediante API REST, con HTTPS en producción. NestJS contiene la lógica de negocio; MikroORM gestiona la persistencia en MySQL alojado en Aiven.
 
-```bash
-# development
-$ npm run start
+## Tecnologías
 
-# watch mode
-$ npm run start:dev
+- Backend: NestJS, TypeScript, MikroORM 7, MySQL 8, JWT y bcryptjs.
+- Testing del backend: Jest.
+- Infraestructura: Render y Aiven MySQL.
+- Frontend relacionado: React 19, TypeScript y Vite, desplegado en Vercel.
 
-# production mode
-$ npm run start:prod
+## Requisitos
+
+- Node.js 24.x.
+- npm.
+- Una instancia MySQL disponible y una base creada para el proyecto.
+
+## Instalación
+
+```sh
+git clone https://github.com/santiagosardi/mygamesearcher-backend.git
+cd mygamesearcher-backend
+npm ci
 ```
 
-## Run tests
+Copiar [.env.example](./.env.example) a `.env` y completar la configuración local. No versionar secretos. Aplicar las migraciones antes del primer arranque.
 
-```bash
-# unit tests
-$ npm run test
+## Variables de entorno
 
-# e2e tests
-$ npm run test:e2e
+| Variable | Uso |
+|---|---|
+| `NODE_ENV` | `development` en local y `production` en producción. |
+| `PORT` | Puerto HTTP; fallback `3000`. |
+| `DB_HOST` | Host MySQL. |
+| `DB_PORT` | Puerto MySQL. |
+| `DB_USER` | Usuario de la base. |
+| `DB_PASS` | Contraseña; no se utiliza `DB_PASSWORD`. |
+| `DB_NAME` | Nombre de la base. |
+| `DB_SSL` | Normalmente `false` en local; `true` para Aiven. |
+| `DB_SSL_CA` | CA de Aiven en PEM cuando corresponde; admite saltos reales o `\n`. |
+| `JWT_SECRET` | Secreto obligatorio de JWT. No debe versionarse. |
+| `FRONTEND_ORIGIN` | Origen exacto permitido por CORS; fallback `http://localhost:5173`. |
 
-# test coverage
-$ npm run test:cov
+### Seed de administrador
+
+`ADMIN_EMAIL` y `ADMIN_PASSWORD` son necesarios para ejecutar el seed. `ADMIN_NOMBRE` es opcional y usa `Administrador` por defecto; `ADMIN_APELLIDO` es opcional. Una nueva ejecución puede reutilizar el usuario y actualizar su contraseña.
+
+### Entorno E2E
+
+Consultar las variables y medidas de aislamiento en [la guía E2E](./e2e/README.md). Debe utilizar una base y credenciales separadas de producción.
+
+## Ejecución local
+
+Con la base disponible, migrada y configurada mediante `.env`:
+
+```sh
+npm run start:dev
 ```
 
-## Deployment
+## Scripts principales
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+| Comando | Función |
+|---|---|
+| `npm run start` | Arranque con Nest CLI. |
+| `npm run start:dev` | Desarrollo con recarga. |
+| `npm run build` | Compila a `dist/`. |
+| `npm run start:prod` | Ejecuta el backend compilado. |
+| `npm run lint` | ESLint con corrección automática. |
+| `npm run format` | Aplica formato con Prettier. |
+| `npm test` | Jest mediante Node con VM Modules. |
+| `npm run test:watch` | Jest en modo watch. |
+| `npm run test:cov` | Jest con cobertura. |
+| `npm run migration:up:prod` | Aplica migraciones con configuración compilada. |
+| `npm run seed` | Carga el catálogo desde TypeScript. |
+| `npm run seed:admin` | Crea o actualiza el administrador. |
+| `npm run start:e2e` | Compila y arranca el backend E2E aislado. |
+| `npm run e2e:db:reset` | Reconstruye tablas y carga datos de la base E2E. |
+| `npm run e2e:db:seed` | Carga datos sobre el esquema E2E migrado. |
+| `npm run test:e2e` | Ejecuta la configuración E2E de Jest; no prepara el entorno aislado. |
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+Los scripts de watch y cobertura invocan Jest directamente y no incluyen el flag de VM Modules de `npm test`.
 
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+## Migraciones
+
+```sh
+npm run build
+npm run migration:up:prod
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+Las migraciones crean o actualizan el esquema. El script utiliza `dist/mikro-orm.config.js` y apunta a la base configurada por variables de entorno, tanto en local como en producción. No se ejecutan automáticamente al iniciar la aplicación. Comprobar el destino antes de aplicarlas.
 
-## Resources
+## Seeds
 
-Check out a few resources that may come in handy when working with NestJS:
+### Catálogo
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+```sh
+npm run seed
+```
 
-## Support
+Alternativa después de `npm run build`:
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+```sh
+node dist/seed/seed.js
+```
 
-## Stay in touch
+Procesa géneros, plataformas, características y 50 juegos dentro de una transacción. Reutiliza atributos por nombre y juegos por título, actualiza descripciones, conserva imágenes personalizadas existentes y completa imágenes ausentes cuando el catálogo tiene una URL. Agrega relaciones sin borrar las previas.
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+Es reutilizable en ejecuciones consecutivas. No garantiza evitar duplicados ante escrituras concurrentes, porque el título no es UNIQUE. Rechaza títulos que coincidan con varios juegos existentes.
 
-## License
+### Administrador
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+```sh
+npm run seed:admin
+```
+
+Alternativa después de compilar:
+
+```sh
+node dist/seed/seed-admin.js
+```
+
+Crea o reutiliza el usuario por email, lo activa, asigna ADMIN y actualiza su contraseña. Los seeds requieren el esquema migrado y no se ejecutan al iniciar NestJS. Consultar [la guía de seeds](./src/seed/README.md).
+
+## Testing
+
+Jest se utiliza para las pruebas del backend. La validación final registrada es de **14 suites y 174 tests aprobados** mediante `npm test`.
+
+La infraestructura E2E aislada es independiente. Los flujos Playwright fueron trabajados desde el repositorio frontend; los 174 tests no corresponden a Playwright. `npm run test:e2e` no sustituye la preparación del entorno aislado. Consultar [la guía E2E](./e2e/README.md).
+
+## Deploy
+
+Producción utiliza la rama `main`: [frontend en Vercel](https://mygamesearcher-frontend-fawn.vercel.app), [backend en Render](https://mygamesearcher-backend.onrender.com) y MySQL 8 en Aiven. Las migraciones están aplicadas y el catálogo de 50 juegos está cargado.
+
+Configuración actual de Render, build:
+
+```sh
+npm ci --include=dev && npm run build
+```
+
+Start:
+
+```sh
+npm run start:prod
+```
+
+Render ejecuta NestJS y Aiven aloja MySQL. `DB_SSL=true` y `DB_SSL_CA` configuran SSL con validación del certificado. `FRONTEND_ORIGIN` permite únicamente el origen configurado del frontend en modo normal. `GET /` devuelve `Hello World!` como comprobación básica de disponibilidad; no consulta la base en esa petición.
+
+## Frontend
+
+- [Repositorio frontend](https://github.com/santiagosardi/mygamesearcher-frontend).
+- [Aplicación frontend](https://mygamesearcher-frontend-fawn.vercel.app).
+
+Consultar también el [índice de documentación](./docs/README.md).

@@ -1,7 +1,8 @@
 # Backend E2E aislado
 
-Esta infraestructura está preparada, pero no se creó una base ni se ejecutó ningún
-arranque E2E, reset, migración, seed o Playwright durante su implementación.
+Esta infraestructura utiliza una base descartable y credenciales exclusivas.
+Debe estar completamente aislada de producción; nunca apuntar estos comandos a la
+base Aiven de producción ni reutilizar sus credenciales.
 
 ## Preparación manual, cuando se autorice
 
@@ -14,7 +15,7 @@ arranque E2E, reset, migración, seed o Playwright durante su implementación.
 3. El ADMIN E2E debe usar email `@example.test`. No usar el ADMIN de desarrollo.
 4. Para autorizar reset o seed, configurar `E2E_ALLOW_DB_RESET=YES` en ese archivo.
 
-## Comandos futuros (no ejecutados ahora)
+## Comandos
 
 Desde la raíz del backend:
 
@@ -51,24 +52,31 @@ el destino ORM y la base efectiva de MySQL antes de reset/seed.
 Los errores no imprimen credenciales, hashes ni JWT_SECRET.
 
 El backend escucha en 3001 y admite CORS únicamente desde
-http://127.0.0.1:5174 y http://localhost:5174. El origen normal sigue siendo
-http://localhost:5173.
+http://127.0.0.1:5174 y http://localhost:5174. Fuera de E2E, CORS usa
+FRONTEND_ORIGIN, con fallback a http://localhost:5173.
 
-## Integración pendiente con Playwright
+## Integración con el frontend
 
-El comando del backend para un futuro `webServer` es:
+Los flujos Playwright se trabajan en el [repositorio frontend](https://github.com/santiagosardi/mygamesearcher-frontend).
+Su configuración y estado deben consultarse allí. Desde la raíz de este backend,
+el comando para iniciar el servicio aislado es:
 
 ```sh
-npm --prefix C:/Users/Ss/mygamesearcher-backend run start:e2e
+npm run start:e2e
 ```
 
-Usar URL de disponibilidad http://127.0.0.1:3001 y reuseExistingServer=false.
-Actualmente Playwright usa localhost:5174/3001 y solo levanta el frontend.
-Su globalSetup y fixture todavía bloquean deliberadamente la ejecución.
-Antes de ejecutar `npm run test:e2e` desde el frontend, hace falta habilitar
-un preflight verificable de aislamiento, integrar el arranque backend, instalar
-Chromium si falta y proporcionar E2E_ADMIN_EMAIL/E2E_ADMIN_PASSWORD al proceso
-Playwright. No se modificaron esos archivos ni se retiró el bloqueo.
+La URL de disponibilidad es http://127.0.0.1:3001. Al integrar un runner del
+frontend, verificar el aislamiento y evitar reutilizar un servidor de otro entorno.
+
+## Jest y entorno aislado
+
+`npm test` ejecuta las pruebas Jest del backend: la validación final registrada
+es de 14 suites y 174 tests aprobados. No son pruebas Playwright.
+
+`npm run test:e2e` ejecuta la configuración Jest de `test/jest-e2e.json` y su
+prueba HTTP de `GET /`. Importa AppModule, pero el comando no establece por sí
+solo NODE_ENV=e2e ni prepara la base aislada. No equivale a `e2e:db:reset`,
+`e2e:db:seed` ni `start:e2e`; confirmar el entorno antes de ejecutarlo.
 
 ## Verificaciones permitidas sin MySQL
 

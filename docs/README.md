@@ -1,9 +1,7 @@
 # MyGameSearcher - Backend
 
-[Documentación](./docs/README.md)
+Índice de documentación del backend:
 
-## Instalación
-1. Clonar el repo
-2. `npm install`
-3. Crear `.env` en base a `.env.example`
-4. `npm run start:dev`
+- [Descripción, instalación y deploy](../README.md).
+- [Entorno E2E aislado](../e2e/README.md).
+- [Seeds de catálogo y administrador](../src/seed/README.md).

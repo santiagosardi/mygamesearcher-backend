@@ -7,6 +7,14 @@ Ejecutar desde la raíz del proyecto, con las variables `DB_HOST`, `DB_PORT`,
 npm run seed
 ```
 
+La base debe tener las migraciones aplicadas. En Aiven, configurar también
+`DB_SSL=true` y `DB_SSL_CA` según el certificado del servicio.
+Alternativa compilada, después de `npm run build`:
+
+```sh
+node dist/seed/seed.js
+```
+
 No se ejecuta al iniciar NestJS. Usa `ts-node` y MikroORM ya instalados, sin
 dependencias adicionales ni migraciones. Incluye exactamente 50 juegos;
 `catalogo.ts` contiene las clasificaciones y las ediciones seleccionadas.
@@ -22,8 +30,9 @@ concurrentes sin una restricción UNIQUE.
 
 Para juegos existentes conserva ID y título, actualiza la descripción y agrega
 las relaciones del catálogo sin quitar relaciones previas. No modifica fecha de
-lanzamiento, desarrollador ni imagen. Los juegos nuevos dejan esos campos
-opcionales sin valor. Géneros, plataformas y características existentes
+lanzamiento ni desarrollador. Conserva `urlImagen` si ya existe; cuando está
+ausente y el catálogo proporciona una URL, la completa, también en juegos nuevos.
+Los juegos nuevos dejan fecha de lanzamiento y desarrollador sin valor. Géneros, plataformas y características existentes
 conservan sus nombres y descripciones.
 
 No elimina registros ni asigna IDs. No escribe en Usuario, Biblioteca, Coleccion
@@ -38,3 +47,25 @@ el proceso termina con código distinto de cero y la conexión se cierra.
 Los tests del seed usan memoria y no abren conexiones MySQL. Comprueban catálogo,
 reutilización, conservación de relaciones y rechazo de títulos ambiguos; no
 sustituyen una validación de transacciones y pivotes contra una base de pruebas.
+
+## Seed de administrador
+
+Desde la raíz del proyecto:
+
+```sh
+npm run seed:admin
+```
+
+Alternativa después de `npm run build`:
+
+```sh
+node dist/seed/seed-admin.js
+```
+
+Requiere `ADMIN_EMAIL` y `ADMIN_PASSWORD`. `ADMIN_NOMBRE` es opcional y usa
+`Administrador` por defecto; `ADMIN_APELLIDO` es opcional. No versionar credenciales.
+La contraseña debe tener al menos 8 caracteres y no superar 72 bytes UTF-8.
+
+Crea o reutiliza un usuario por email, lo activa y asigna el rol ADMIN dentro de
+una transacción. Reejecutarlo actualiza su contraseña; no es una operación sin
+efectos sobre una cuenta existente. No se ejecuta al arrancar NestJS.
