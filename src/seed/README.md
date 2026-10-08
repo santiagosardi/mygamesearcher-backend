@@ -16,7 +16,7 @@ node dist/seed/seed.js
 ```
 
 No se ejecuta al iniciar NestJS. Usa `ts-node` y MikroORM ya instalados, sin
-dependencias adicionales ni migraciones. Incluye exactamente 50 juegos;
+dependencias adicionales ni migraciones. El catálogo incluye 147 juegos, 13 géneros, 6 plataformas y 15 características;
 `catalogo.ts` contiene las clasificaciones y las ediciones seleccionadas.
 Las plataformas no enumeran compatibilidad con generaciones anteriores.
 
@@ -38,7 +38,7 @@ conservan sus nombres y descripciones.
 No elimina registros ni asigna IDs. No escribe en Usuario, Biblioteca, Coleccion
 ni coleccion_juego. Elden Ring y The Witcher 3 se reutilizan por título, de modo
 que las referencias de biblioteca y colecciones siguen apuntando a los mismos
-juegos. Una segunda ejecución reutiliza los 50 juegos y las mismas relaciones.
+juegos. Una segunda ejecución reutiliza los juegos existentes del catálogo cuando los encuentra por título y conserva las relaciones existentes.
 
 El resumen diferencia juegos creados de actualizados/reutilizados; esta última
 cifra no implica que todos hayan requerido un UPDATE. Los errores se imprimen,
