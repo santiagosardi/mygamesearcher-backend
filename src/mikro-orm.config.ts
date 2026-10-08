@@ -17,6 +17,15 @@ export default defineConfig({
   user: process.env.DB_USER,
   password: process.env.DB_PASS,
   dbName: process.env.DB_NAME,
+  driverOptions:
+    process.env.DB_SSL === 'true'
+      ? {
+          ssl: {
+            ca: process.env.DB_SSL_CA?.replace(/\\n/g, '\n') || undefined,
+            rejectUnauthorized: true,
+          },
+        }
+      : {},
   entities: [
     Genero,
     Plataforma,
