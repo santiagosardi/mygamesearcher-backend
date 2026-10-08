@@ -57,9 +57,9 @@ describe('Seed del catálogo (sin MySQL)', () => {
     await orm?.close(true);
   });
 
-  it('incluye 50 títulos distintos y clasificaciones válidas y variadas', () => {
-    expect(CATALOGO).toHaveLength(50);
-    expect(new Set(CATALOGO.map((j) => j.titulo)).size).toBe(50);
+  it('incluye 147 títulos distintos y clasificaciones válidas y variadas', () => {
+    expect(CATALOGO).toHaveLength(147);
+    expect(new Set(CATALOGO.map((j) => j.titulo)).size).toBe(CATALOGO.length);
     for (const [campo, permitidos] of [
       ['generos', GENEROS],
       ['plataformas', PLATAFORMAS],
@@ -78,9 +78,9 @@ describe('Seed del catálogo (sin MySQL)', () => {
     }
   });
 
-  it('carga las 46 portadas de Steam y deja cuatro juegos sin portada', async () => {
+  it('carga las 127 portadas de Steam y deja 20 juegos sin portada', async () => {
     const conPortada = CATALOGO.filter((juego) => juego.urlImagen);
-    expect(conPortada).toHaveLength(46);
+    expect(conPortada).toHaveLength(127);
     for (const juego of conPortada) {
       expect(juego.urlImagen).toMatch(
         /^https:\/\/cdn\.cloudflare\.steamstatic\.com\/steam\/apps\/\d+\/header\.jpg$/,
@@ -90,7 +90,30 @@ describe('Seed del catálogo (sin MySQL)', () => {
       CATALOGO.filter((juego) => !juego.urlImagen)
         .map((juego) => juego.titulo)
         .sort(),
-    ).toEqual(['Fortnite', 'Gran Turismo 7', 'Minecraft', 'Valorant']);
+    ).toEqual(
+      [
+        'Valorant',
+        'Fortnite',
+        'Minecraft',
+        'Gran Turismo 7',
+        "Uncharted 4: A Thief's End",
+        'Uncharted: The Lost Legacy',
+        'Resident Evil Requiem',
+        'Kingdom Hearts III',
+        "Marvel's Wolverine",
+        'Diablo II: Resurrected',
+        'Call of Duty: Black Ops 6',
+        'World War Z: Aftermath',
+        'YAPYAP',
+        'The Legend of Zelda: Breath of the Wild',
+        'The Legend of Zelda: Tears of the Kingdom',
+        'Super Mario Party Jamboree',
+        'Super Mario Bros. Wonder',
+        'Super Mario Odyssey',
+        'Shadow of the Colossus (2018)',
+        'Jak and Daxter: The Precursor Legacy',
+      ].sort(),
+    );
     expect(
       CATALOGO.find((juego) => juego.titulo === 'God of War Ragnarök')
         ?.urlImagen,
@@ -117,11 +140,13 @@ describe('Seed del catálogo (sin MySQL)', () => {
       j.caracteristicas.length,
     ]);
     const segunda = await seedCatalogo(almacen.em);
-    expect(primera.juegosCreados).toBe(50);
+    expect(primera.juegosCreados).toBe(CATALOGO.length);
     expect(segunda.juegosCreados).toBe(0);
-    expect(segunda.juegosActualizadosOReutilizados).toBe(50);
-    expect(almacen.juegos).toHaveLength(50);
-    expect(almacen.atributos).toHaveLength(33);
+    expect(segunda.juegosActualizadosOReutilizados).toBe(CATALOGO.length);
+    expect(almacen.juegos).toHaveLength(CATALOGO.length);
+    expect(almacen.atributos).toHaveLength(
+      GENEROS.length + PLATAFORMAS.length + CARACTERISTICAS.length,
+    );
     expect(
       almacen.juegos.map((j) => [
         j.generos.length,
@@ -150,8 +175,8 @@ describe('Seed del catálogo (sin MySQL)', () => {
       return juego;
     });
     const resultado = await seedCatalogo(almacen.em);
-    expect(resultado.juegosCreados).toBe(48);
-    expect(resultado.juegosActualizadosOReutilizados).toBe(2);
+    expect(resultado.juegosCreados).toBe(CATALOGO.length - originales.length);
+    expect(resultado.juegosActualizadosOReutilizados).toBe(originales.length);
     for (const [index, juego] of originales.entries()) {
       expect(juego.id).toBe(index + 2);
       expect(almacen.juegos[index]).toBe(juego);
