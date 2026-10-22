@@ -1,4 +1,5 @@
 import {
+  BadGatewayException,
   BadRequestException,
   Injectable,
   NotFoundException,
@@ -53,6 +54,76 @@ export class JuegoService {
     return juego;
   }
 
+  async findOfertas(id: number) {
+    const juego = await this.findOne(id);
+    const url = new URL('https://www.cheapshark.com/api/1.0/games');
+    url.searchParams.set('title', juego.titulo);
+    url.searchParams.set('exact', '1');
+    url.searchParams.set('limit', '1');
+
+    try {
+      const response = await fetch(url, {
+        headers: { 'User-Agent': 'MyGameSearcher/1.0' },
+        signal: AbortSignal.timeout(5000),
+      });
+      if (!response.ok) throw new Error('Respuesta externa no exitosa');
+
+      const resultados: unknown = await response.json();
+      if (!Array.isArray(resultados))
+        throw new Error('Respuesta externa inválida');
+      if (resultados.length === 0) {
+        return {
+          disponible: false,
+          fuente: 'CheapShark',
+          mensaje: 'No se encontraron ofertas externas para este juego.',
+        };
+      }
+
+      const oferta: unknown = resultados[0];
+      if (
+        !oferta ||
+        typeof oferta !== 'object' ||
+        !('external' in oferta) ||
+        typeof oferta.external !== 'string' ||
+        !('cheapest' in oferta) ||
+        typeof oferta.cheapest !== 'string' ||
+        !('cheapestDealID' in oferta) ||
+        typeof oferta.cheapestDealID !== 'string' ||
+        !oferta.cheapestDealID ||
+        !('thumb' in oferta) ||
+        typeof oferta.thumb !== 'string'
+      )
+        throw new Error('Oferta externa inválida');
+
+      const steamAppId = 'steamAppID' in oferta ? oferta.steamAppID : null;
+      if (
+        steamAppId != null &&
+        steamAppId !== '' &&
+        (typeof steamAppId !== 'string' || !/^\d+$/.test(steamAppId))
+      ) {
+        throw new Error('Identificador externo inválido');
+      }
+      const urlOferta = new URL('https://www.cheapshark.com/redirect');
+      urlOferta.searchParams.set('dealID', oferta.cheapestDealID);
+
+      return {
+        disponible: true,
+        fuente: 'CheapShark',
+        titulo: oferta.external,
+        precioMasBajoUSD: oferta.cheapest,
+        steamAppId: steamAppId || null,
+        imagen: oferta.thumb,
+        urlOferta: urlOferta.toString(),
+        urlSteam: steamAppId
+          ? `https://store.steampowered.com/app/${steamAppId}`
+          : null,
+      };
+    } catch {
+      throw new BadGatewayException(
+        'No se pudieron consultar las ofertas externas.',
+      );
+    }
+  }
   async create(createJuegoDto: CreateJuegoDto): Promise<Juego> {
     const juego = new Juego();
     juego.titulo = createJuegoDto.titulo;
