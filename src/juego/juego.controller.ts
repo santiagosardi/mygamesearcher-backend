@@ -9,10 +9,12 @@ import {
   Patch,
   Delete,
   Param,
+  Query,
   Body,
   ParseIntPipe,
   UseGuards,
 } from '@nestjs/common';
+import { JuegoQueryDto } from './dto/juego-query.dto';
 import { JuegoService } from './juego.service';
 import { CreateJuegoDto } from './dto/create-juego.dto';
 import { UpdateJuegoDto } from './dto/update-juego.dto';
@@ -22,8 +24,8 @@ export class JuegoController {
   constructor(private readonly juegoService: JuegoService) {}
 
   @Get()
-  findAll() {
-    return this.juegoService.findAll();
+  findAll(@Query() query: JuegoQueryDto) {
+    return this.juegoService.findAll(query.buscar);
   }
 
   @Get(':id')
