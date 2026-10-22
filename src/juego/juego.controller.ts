@@ -33,6 +33,11 @@ export class JuegoController {
     return this.juegoService.findOne(id);
   }
 
+  @Get(':id/ofertas')
+  findOfertas(@Param('id', ParseIntPipe) id: number) {
+    return this.juegoService.findOfertas(id);
+  }
+
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(RolUsuario.ADMIN)
