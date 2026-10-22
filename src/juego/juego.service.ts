@@ -25,7 +25,16 @@ export class JuegoService {
     private readonly caracteristicaRepository: EntityRepository<Caracteristica>,
   ) {}
 
-  findAll(): Promise<Juego[]> {
+  findAll(buscar?: string): Promise<Juego[]> {
+    const termino = buscar?.trim();
+    if (termino) {
+      // Escapar comodines para buscar el texto literal dentro del título.
+      const patron = termino.replace(/[\\%_]/g, '\\$&');
+      return this.juegoRepository.find(
+        { titulo: { $like: `%${patron}%` } },
+        { populate: ['generos', 'plataformas', 'caracteristicas'] },
+      );
+    }
     return this.juegoRepository.findAll({
       populate: ['generos', 'plataformas', 'caracteristicas'],
     });
