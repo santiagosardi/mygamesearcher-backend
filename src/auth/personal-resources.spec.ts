@@ -10,6 +10,7 @@ import { ColeccionController } from '../coleccion/coleccion.controller';
 import { Usuario } from '../usuario/usuario.entity';
 import { Juego } from '../juego/juego.entity';
 import { RecomendacionController } from '../recomendacion/recomendacion.controller';
+import { RecomendacionIaService } from '../recomendacion/recomendacion-ia.service';
 import { RecomendacionService } from '../recomendacion/recomendacion.service';
 import { CreateBibliotecaDto } from '../biblioteca/dto/create-biblioteca.dto';
 import { CreateColeccionDto } from '../coleccion/dto/create-coleccion.dto';
@@ -111,6 +112,10 @@ describe('Identidad de controllers personales', () => {
         { provide: BibliotecaService, useValue: biblioteca },
         { provide: ColeccionService, useValue: coleccion },
         { provide: RecomendacionService, useValue: recomendaciones },
+        {
+          provide: RecomendacionIaService,
+          useValue: { recomendar: jest.fn() },
+        },
       ],
     })
       .overrideGuard(JwtAuthGuard)

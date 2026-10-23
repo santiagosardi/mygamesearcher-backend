@@ -8,12 +8,14 @@ import { Coleccion } from '../coleccion/coleccion.entity';
 import { RecomendacionService } from './recomendacion.service';
 import { RecomendacionController } from './recomendacion.controller';
 
+import { RecomendacionIaService } from './recomendacion-ia.service';
+
 @Module({
   imports: [
     AuthModule,
     MikroOrmModule.forFeature([Usuario, Biblioteca, Juego, Coleccion]),
   ],
-  providers: [RecomendacionService],
+  providers: [RecomendacionService, RecomendacionIaService],
   controllers: [RecomendacionController],
 })
 export class RecomendacionModule {}
