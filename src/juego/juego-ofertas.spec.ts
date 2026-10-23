@@ -17,7 +17,7 @@ describe('Ofertas externas de Juego', () => {
     gameID: '1',
     external: 'Juego de ejemplo',
     cheapest: '9.99',
-    cheapestDealID: 'deal+/=',
+    cheapestDealID: 'deal%2B%2F%3D',
     steamAppID: '12345',
     thumb: 'https://example.com/imagen.jpg',
   };
@@ -72,6 +72,21 @@ describe('Ofertas externas de Juego', () => {
     });
   });
 
+  it.each(['abc%2B123%2F%3D', 'abc+123/='])(
+    'conserva una sola capa de encoding para dealID=%s',
+    async (cheapestDealID) => {
+      fetchMock.mockResolvedValue(
+        new Response(JSON.stringify([{ ...oferta, cheapestDealID }])),
+      );
+      const resultado = await service.findOfertas(32);
+      expect(resultado.urlOferta).toBe(
+        'https://www.cheapshark.com/redirect?dealID=abc%2B123%2F%3D',
+      );
+      expect(new URL(resultado.urlOferta!).searchParams.get('dealID')).toBe(
+        'abc+123/=',
+      );
+    },
+  );
   it.each([null, '', undefined])(
     'admite steamAppID ausente: %p',
     async (steamAppID) => {
