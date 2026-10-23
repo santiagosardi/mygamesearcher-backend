@@ -104,7 +104,10 @@ export class JuegoService {
         throw new Error('Identificador externo inválido');
       }
       const urlOferta = new URL('https://www.cheapshark.com/redirect');
-      urlOferta.searchParams.set('dealID', oferta.cheapestDealID);
+      urlOferta.searchParams.set(
+        'dealID',
+        decodeURIComponent(oferta.cheapestDealID),
+      );
 
       return {
         disponible: true,
