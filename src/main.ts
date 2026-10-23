@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
 import { e2eCorsOrigins } from './e2e/environment';
+import { isAllowedFrontendOrigin } from './config/cors';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -9,7 +10,15 @@ async function bootstrap() {
     origin:
       process.env.NODE_ENV === 'e2e'
         ? e2eCorsOrigins(process.env)
-        : (process.env.FRONTEND_ORIGIN ?? 'http://localhost:5173'),
+        : (
+            origin: string | undefined,
+            callback: (error: Error | null, allow: boolean) => void,
+          ) => {
+            callback(
+              null,
+              isAllowedFrontendOrigin(origin, process.env.FRONTEND_ORIGIN),
+            );
+          },
   });
   app.useGlobalPipes(
     new ValidationPipe({
