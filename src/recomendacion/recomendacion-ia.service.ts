@@ -113,7 +113,7 @@ export class RecomendacionIaService {
       ),
     };
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 45000);
+    const timer = setTimeout(() => controller.abort(), 60000);
     let etapa = 'red';
     try {
       const response = await fetch(
@@ -145,6 +145,9 @@ export class RecomendacionIaService {
               { role: 'user', parts: [{ text: JSON.stringify(contexto) }] },
             ],
             generationConfig: {
+              thinkingConfig: {
+                thinkingLevel: 'low',
+              },
               responseMimeType: 'application/json',
               responseSchema: {
                 type: 'OBJECT',

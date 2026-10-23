@@ -369,7 +369,7 @@ describe('RecomendacionIaService', () => {
     ]);
   });
 
-  it('aborta a los 45 segundos, nunca antes, sin reintentos', async () => {
+  it('aborta a los 60 segundos, nunca antes, sin reintentos', async () => {
     jest.useFakeTimers();
     fetchMock.mockImplementation(
       (_url, options) =>
@@ -384,7 +384,7 @@ describe('RecomendacionIaService', () => {
     const pending = expect(service.recomendar(8)).rejects.toBeInstanceOf(
       GatewayTimeoutException,
     );
-    await jest.advanceTimersByTimeAsync(44999);
+    await jest.advanceTimersByTimeAsync(59999);
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const signal = fetchMock.mock.calls[0][1]?.signal;
     expect(signal?.aborted).toBe(false);
