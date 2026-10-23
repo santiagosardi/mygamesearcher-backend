@@ -190,6 +190,31 @@ describe('Seed del catálogo (sin MySQL)', () => {
     }
   });
 
+  it('carga desarrollador y fecha de lanzamiento desde el catálogo', async () => {
+    const original = CATALOGO[0];
+
+    CATALOGO[0] = {
+      ...original,
+      desarrollador: 'Desarrollador de prueba',
+      fechaLanzamiento: '2022-02-25',
+    };
+
+    try {
+      const almacen = crearAlmacen();
+
+      await seedCatalogo(almacen.em);
+
+      const juego = almacen.juegos.find(
+        (item) => item.titulo === original.titulo,
+      );
+
+      expect(juego?.desarrollador).toBe('Desarrollador de prueba');
+      expect(juego?.fechaLanzamiento).toBe('2022-02-25');
+    } finally {
+      CATALOGO[0] = original;
+    }
+  });
+
   it('completa la portada del catálogo solo cuando el juego no tiene una', async () => {
     const original = CATALOGO[0];
     const urlImagen = 'https://example.invalid/portada-test.png';

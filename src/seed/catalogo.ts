@@ -44,6 +44,8 @@ export const CARACTERISTICAS = [
 export interface JuegoSeed {
   titulo: string;
   descripcion: string;
+  desarrollador?: string;
+  fechaLanzamiento?: string;
   urlImagen?: string;
   generos: (typeof GENEROS)[number][];
   plataformas: (typeof PLATAFORMAS)[number][];

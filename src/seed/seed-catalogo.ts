@@ -58,6 +58,15 @@ export async function seedCatalogo(em: EntityManager) {
         creados++;
       }
       juego.descripcion = datos.descripcion;
+
+      if (!juego.desarrollador && datos.desarrollador) {
+        juego.desarrollador = datos.desarrollador;
+      }
+
+      if (!juego.fechaLanzamiento && datos.fechaLanzamiento) {
+        juego.fechaLanzamiento = datos.fechaLanzamiento;
+      }
+
       if (!juego.urlImagen && datos.urlImagen) {
         juego.urlImagen = datos.urlImagen;
       }
