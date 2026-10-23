@@ -113,7 +113,7 @@ export class RecomendacionIaService {
       ),
     };
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 60000);
+    const timer = setTimeout(() => controller.abort(), 120000);
     let etapa = 'red';
     try {
       const response = await fetch(
