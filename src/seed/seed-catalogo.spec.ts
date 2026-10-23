@@ -57,8 +57,8 @@ describe('Seed del catálogo (sin MySQL)', () => {
     await orm?.close(true);
   });
 
-  it('incluye 147 títulos distintos y clasificaciones válidas y variadas', () => {
-    expect(CATALOGO).toHaveLength(147);
+  it('incluye 347 títulos distintos y clasificaciones válidas y variadas', () => {
+    expect(CATALOGO).toHaveLength(347);
     expect(new Set(CATALOGO.map((j) => j.titulo)).size).toBe(CATALOGO.length);
     for (const [campo, permitidos] of [
       ['generos', GENEROS],
@@ -78,9 +78,9 @@ describe('Seed del catálogo (sin MySQL)', () => {
     }
   });
 
-  it('carga las 127 portadas de Steam y deja 20 juegos sin portada', async () => {
+  it('carga las 327 portadas de Steam y conserva los 20 juegos originales sin portada', async () => {
     const conPortada = CATALOGO.filter((juego) => juego.urlImagen);
-    expect(conPortada).toHaveLength(127);
+    expect(conPortada).toHaveLength(327);
     for (const juego of conPortada) {
       expect(juego.urlImagen).toMatch(
         /^https:\/\/cdn\.cloudflare\.steamstatic\.com\/steam\/apps\/\d+\/header\.jpg$/,
@@ -131,6 +131,68 @@ describe('Seed del catálogo (sin MySQL)', () => {
     }
   });
 
+  it('agrega exactamente 200 juegos con desarrollador y fecha válida sin exigirlos a los 147 originales', () => {
+    const nuevos = CATALOGO.slice(147);
+    expect(nuevos).toHaveLength(200);
+    for (const juego of nuevos) {
+      expect(juego.desarrollador?.trim().length).toBeGreaterThan(0);
+      expect(juego.desarrollador!.length).toBeLessThanOrEqual(255);
+      expect(juego.fechaLanzamiento).toMatch(/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/);
+      expect(new Date(juego.fechaLanzamiento!).toISOString().slice(0, 10)).toBe(
+        juego.fechaLanzamiento,
+      );
+      expect(juego.urlImagen).toBeDefined();
+    }
+  });
+
+  it('no repite títulos, ediciones equivalentes ni las exclusiones de producción en la ampliación', () => {
+    const normalizar = (titulo: string) =>
+      titulo
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase()
+        .replace(/^1\s+/, '')
+        .replace(
+          /\b(pixel remaster|hd remaster|remastered|remaster|definitive edition|enhanced edition|complete edition|game of the year edition|goty edition)\b/g,
+          '',
+        )
+        .replace(/[^a-z0-9]/g, '');
+    const prohibidos = new Set(
+      [
+        ...CATALOGO.slice(0, 147).map((juego) => juego.titulo),
+        'DOOM (2016)',
+        '1 DOOM',
+        '1 DOOM Eternal',
+        'Hollow Knight: Silksong',
+        '!',
+      ].map(normalizar),
+    );
+    const nuevos = CATALOGO.slice(147).map((juego) => normalizar(juego.titulo));
+    expect(new Set(nuevos).size).toBe(200);
+    for (const titulo of nuevos) {
+      expect(prohibidos.has(titulo)).toBe(false);
+    }
+    const portadas = CATALOGO.filter((juego) => juego.urlImagen).map(
+      (juego) => juego.urlImagen,
+    );
+    expect(new Set(portadas).size).toBe(portadas.length);
+  });
+
+  it('completa los metadatos de un juego de la ampliación sin sobrescribir valores existentes', async () => {
+    const datos = CATALOGO[147];
+    const almacen = crearAlmacen();
+    const juego = new Juego();
+    juego.titulo = datos.titulo;
+    almacen.juegos.push(juego);
+    await seedCatalogo(almacen.em);
+    expect(juego.desarrollador).toBe(datos.desarrollador);
+    expect(juego.fechaLanzamiento).toBe(datos.fechaLanzamiento);
+    juego.desarrollador = 'Desarrollador existente';
+    juego.fechaLanzamiento = '2000-01-01';
+    await seedCatalogo(almacen.em);
+    expect(juego.desarrollador).toBe('Desarrollador existente');
+    expect(juego.fechaLanzamiento).toBe('2000-01-01');
+  });
   it('reutiliza los registros y no duplica relaciones en dos cargas consecutivas', async () => {
     const almacen = crearAlmacen();
     const primera = await seedCatalogo(almacen.em);
@@ -187,6 +249,31 @@ describe('Seed del catálogo (sin MySQL)', () => {
       expect(juego.generos.getItems().some((g) => g.nombre === 'RPG')).toBe(
         true,
       );
+    }
+  });
+
+  it('carga desarrollador y fecha de lanzamiento desde el catálogo', async () => {
+    const original = CATALOGO[0];
+
+    CATALOGO[0] = {
+      ...original,
+      desarrollador: 'Desarrollador de prueba',
+      fechaLanzamiento: '2022-02-25',
+    };
+
+    try {
+      const almacen = crearAlmacen();
+
+      await seedCatalogo(almacen.em);
+
+      const juego = almacen.juegos.find(
+        (item) => item.titulo === original.titulo,
+      );
+
+      expect(juego?.desarrollador).toBe('Desarrollador de prueba');
+      expect(juego?.fechaLanzamiento).toBe('2022-02-25');
+    } finally {
+      CATALOGO[0] = original;
     }
   });
 
